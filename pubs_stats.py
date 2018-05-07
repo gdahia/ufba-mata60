@@ -169,6 +169,20 @@ def main(prod_data_path, act_data_path):
   plt.show()
   journal_means_plot.savefig('journal_means.pdf')
 
+  journals_boxplot = plt.figure()
+  plt.title('Boxplot de publicacoes em journals por regiao')
+  plt.boxplot([journals_by_region[region] for region in region_labels])
+  plt.xticks(np.array(ind) + 1, region_labels)
+  plt.show()
+  journals_boxplot.savefig('journals_boxplot.pdf')
+
+  confs_boxplot = plt.figure()
+  plt.title('Boxplot de publicacoes em conferencias por regiao')
+  plt.boxplot([confs_by_region[region] for region in region_labels])
+  plt.xticks(np.array(ind) + 1, region_labels)
+  plt.show()
+  journals_boxplot.savefig('confs_boxplot.pdf')
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
