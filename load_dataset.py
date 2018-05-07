@@ -39,8 +39,6 @@ def main(prod_data_path, act_data_path):
   # get journal and conference publications by id
   journals = defaultdict(int)
   journals_sqr = defaultdict(int)
-  confs = defaultdict(int)
-  confs_sqr = defaultdict(int)
   for row in prod_data:
     # retrieve subject id
     subject_id = int(row[0])
@@ -56,9 +54,7 @@ def main(prod_data_path, act_data_path):
 
     # update journals and confs by uf
     journals[subject_uf] += subject_journals
-    journals_sqr[subject_uf] += subject_journals**2
     confs[subject_uf] += subject_confs
-    confs_sqr[subject_uf] += subject_confs**2
 
   # compute region publication share, number of
   # researchers and average publication stats
@@ -76,21 +72,7 @@ def main(prod_data_path, act_data_path):
       'centroeste': 0,
       'sudeste': 0,
   }
-  confs_sqr_by_region = {
-      'nordeste': 0,
-      'norte': 0,
-      'sul': 0,
-      'centroeste': 0,
-      'sudeste': 0,
-  }
   journals_by_region = {
-      'nordeste': 0,
-      'norte': 0,
-      'sul': 0,
-      'centroeste': 0,
-      'sudeste': 0,
-  }
-  journals_sqr_by_region = {
       'nordeste': 0,
       'norte': 0,
       'sul': 0,
@@ -105,24 +87,18 @@ def main(prod_data_path, act_data_path):
       'sudeste': 0,
   }
   total_confs = 0
-  total_confs_sqr = 0
   total_journals = 0
-  total_journals_sqr = 0
   total_ids = 0
   for region in regions:
     for uf in regions[region]:
       # update region statistics
       confs_by_region[region] += confs[uf]
-      confs_sqr_by_region[region] += confs_sqr[uf]
       journals_by_region[region] += journals[uf]
-      journals_sqr_by_region[region] += journals_sqr[uf]
       ids_by_region[region] += uf_count[uf]
 
       # update total statistics
       total_confs += confs[uf]
-      total_confs_sqr += confs_sqr[uf]
       total_journals += journals[uf]
-      total_journals_sqr += journals_sqr[uf]
       total_ids += uf_count[uf]
 
   # print results
@@ -136,34 +112,23 @@ def main(prod_data_path, act_data_path):
   region_labels = []
 
   total_conf_mean = total_confs / total_ids
-  total_conf_std = (total_confs_sqr / total_ids - total_conf_mean**2)**0.5
   total_journal_mean = total_journals / total_ids
-  total_journal_std = (
-      total_journals_sqr / total_ids - total_journal_mean**2)**0.5
 
   print('total:')
   print('conference papers = {}'.format(total_confs))
   print('journal papers = {}'.format(total_journals))
   print('researchers = {}'.format(total_ids))
-  print('conference / researcher = {} ({})'.format(total_conf_mean,
-                                                   total_conf_std))
-  print('journals / researcher = {} ({})'.format(total_journal_mean,
-                                                 total_journal_std))
+  print('conference / researcher = {}'.format(total_conf_mean))
+  print('journals / researcher = {}'.format(total_journal_mean))
   print()
   for region in regions:
     conf_mean = confs_by_region[region] / ids_by_region[region]
-    conf_std = (confs_sqr_by_region[region] / ids_by_region[region] - conf_mean
-                **2)**0.5
     journal_mean = journals_by_region[region] / ids_by_region[region]
-    journal_std = (journals_sqr_by_region[region] / ids_by_region[region] -
-                   journal_mean**2)**0.5
 
     conf_share.append(confs_by_region[region])
     conf_means.append(conf_mean)
-    conf_stds.append(conf_std)
     journal_share.append(journals_by_region[region])
     journal_means.append(journal_mean)
-    journal_stds.append(journal_std)
     id_share.append(ids_by_region[region])
     region_labels.append(region)
 
@@ -171,8 +136,8 @@ def main(prod_data_path, act_data_path):
     print('\tjournals = {}'.format(journals_by_region[region]))
     print('\tconferences = {}'.format(confs_by_region[region]))
     print('\tresearchers = {}'.format(ids_by_region[region]))
-    print('\tconference / researcher = {} ({})'.format(conf_mean, conf_std))
-    print('\tjournal / researcher = {} ({})'.format(journal_mean, journal_std))
+    print('\tconference / researcher = {}'.format(conf_mean))
+    print('\tjournal / researcher = {}'.format(journal_mean))
     print('\tjournal share = {}'.format(journals_by_region[region] /
                                         total_journals))
     print('\tconference share = {}'.format(confs_by_region[region] /
