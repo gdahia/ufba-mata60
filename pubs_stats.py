@@ -182,7 +182,7 @@ def main(prod_data_path, act_data_path):
   plt.boxplot([confs_by_region[region] for region in region_labels])
   plt.xticks(np.array(ind) + 1, region_labels)
   plt.show()
-  journals_boxplot.savefig('confs_boxplot.pdf')
+  confs_boxplot.savefig('confs_boxplot.pdf')
 
 
 if __name__ == '__main__':
