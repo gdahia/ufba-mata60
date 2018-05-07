@@ -54,8 +54,9 @@ def main(prod_data_path, act_data_path):
     subject_uf = subject_ufs[subject_id]
 
     # update journals and confs by uf
-    journals[subject_uf].append(subject_journals)
-    confs[subject_uf].append(subject_confs)
+    if subject_confs != 0 or subject_journals != 0:
+      journals[subject_uf].append(subject_journals)
+      confs[subject_uf].append(subject_confs)
 
   # compute region publication share, number of
   # researchers and average publication stats
