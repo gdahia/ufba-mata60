@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import argparse
 import csv
 import matplotlib.pyplot as plt
@@ -79,70 +80,60 @@ def main(prod_data_path, act_data_path):
       'centroeste': [],
       'sudeste': [],
   }
-  ids_by_region = {
-      'nordeste': 0,
-      'norte': 0,
-      'sul': 0,
-      'centroeste': 0,
-      'sudeste': 0,
-  }
-  total_confs = []
-  total_journals = []
-  total_ids = 0
+  all_confs = []
+  all_journals = []
   for region in regions:
     for uf in regions[region]:
       # update region statistics
       confs_by_region[region].extend(confs[uf])
       journals_by_region[region].extend(journals[uf])
-      ids_by_region[region] += uf_count[uf]
 
       # update total statistics
-      total_confs.extend(confs[uf])
-      total_journals.extend(journals[uf])
-      total_ids += uf_count[uf]
+      all_confs.extend(confs[uf])
+      all_journals.extend(journals[uf])
 
   # print results
   conf_share = []
   conf_means = []
-  conf_stds = []
   journal_share = []
   journal_means = []
-  journal_stds = []
   id_share = []
   region_labels = []
 
-  total_conf_mean = sum(total_confs) / total_ids
-  total_journal_mean = sum(total_journals) / total_ids
+  total_confs = sum(all_confs)
+  total_journals = sum(all_journals)
+  total_ids = len(all_confs)
+  total_conf_mean = np.mean(all_confs)
+  total_journal_mean = np.mean(all_journals)
 
   print('total:')
-  print('conference papers = {}'.format(sum(total_confs)))
-  print('journal papers = {}'.format(sum(total_journals)))
+  print('conference papers = {}'.format(total_confs))
+  print('journal papers = {}'.format(total_journals))
   print('researchers = {}'.format(total_ids))
   print('conference / researcher = {}'.format(total_conf_mean))
   print('journals / researcher = {}'.format(total_journal_mean))
   print()
-  for region in regions:
-    conf_mean = sum(confs_by_region[region]) / ids_by_region[region]
-    journal_mean = sum(journals_by_region[region]) / ids_by_region[region]
+
+  for region in sorted(regions):
+    conf_mean = np.mean(confs_by_region[region])
+    journal_mean = np.mean(journals_by_region[region])
 
     conf_share.append(sum(confs_by_region[region]))
     conf_means.append(conf_mean)
     journal_share.append(sum(journals_by_region[region]))
     journal_means.append(journal_mean)
-    id_share.append(ids_by_region[region])
+    id_share.append(len(confs_by_region[region]))
     region_labels.append(region)
 
     print('region {}'.format(region))
-    print('\tjournals = {}'.format(sum(journals_by_region[region])))
-    print('\tconferences = {}'.format(sum(confs_by_region[region])))
-    print('\tresearchers = {}'.format(ids_by_region[region]))
+    print('\tjournals = {}'.format(journal_share[-1]))
+    print('\tconferences = {}'.format(conf_share[-1]))
+    print('\tresearchers = {}'.format(id_share[-1]))
     print('\tconference / researcher = {}'.format(conf_mean))
     print('\tjournal / researcher = {}'.format(journal_mean))
-    print('\tjournal share = {}'.format(
-        sum(journals_by_region[region]) / sum(total_journals)))
-    print('\tconference share = {}'.format(
-        sum(confs_by_region[region]) / sum(total_confs)))
-    print('\tresearcher share = {}'.format(ids_by_region[region] / total_ids))
+    print('\tjournal share = {}'.format(journal_share[-1] / total_journals))
+    print('\tconference share = {}'.format(conf_share[-1] / total_confs))
+    print('\tresearcher share = {}'.format(id_share[-1] / total_ids))
     print()
 
   conf_share_plot = plt.figure()
