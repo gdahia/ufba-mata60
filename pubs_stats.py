@@ -177,6 +177,20 @@ def main(prod_data_path, act_data_path):
   plt.show()
   journals_boxplot.savefig('journals_boxplot.pdf')
 
+  for region in region_labels:
+    journals_histogram = plt.figure()
+    plt.title('Histograma de publicacoes em journals para a regiao {}'.format(region))
+    plt.hist(journals_by_region[region], 50, range=(0,50))
+    plt.show()
+    journals_histogram.savefig('journals_histogram_{}.pdf'.format(region))
+
+  for region in region_labels:
+    confs_histogram = plt.figure()
+    plt.title('Histograma de publicacoes em conferencias para a regiao {}'.format(region))
+    plt.hist(confs_by_region[region], 50, range=(0,400))
+    plt.show()
+    confs_histogram.savefig('confs_histogram_{}.pdf'.format(region))
+
   confs_boxplot = plt.figure()
   plt.title('Boxplot de publicacoes em conferencias por regiao')
   plt.boxplot([confs_by_region[region] for region in region_labels])
