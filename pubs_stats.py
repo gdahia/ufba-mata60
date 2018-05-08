@@ -93,7 +93,7 @@ def main(prod_data_path, act_data_path):
       all_confs.extend(confs[uf])
       all_journals.extend(journals[uf])
 
-  # print results
+  # initialize results statistics lists
   conf_share = []
   conf_means = []
   journal_share = []
@@ -101,6 +101,7 @@ def main(prod_data_path, act_data_path):
   id_share = []
   region_labels = []
 
+  # compute overall results
   total_confs = sum(all_confs)
   total_journals = sum(all_journals)
   total_ids = len(all_confs)
@@ -115,6 +116,7 @@ def main(prod_data_path, act_data_path):
   print('journals / researcher = {}'.format(total_journal_mean))
   print()
 
+  # compute regional results
   for region in sorted(regions):
     conf_mean = np.mean(confs_by_region[region])
     journal_mean = np.mean(journals_by_region[region])
@@ -137,24 +139,28 @@ def main(prod_data_path, act_data_path):
     print('\tresearcher share = {}'.format(id_share[-1] / total_ids))
     print()
 
+  # plot conference x region share pie graph
   conf_share_plot = plt.figure()
   plt.title('Publicacoes em conferencias por regiao')
   plt.pie(conf_share, labels=region_labels, autopct='%1.1f%%')
   plt.show()
   conf_share_plot.savefig('conf_share.pdf')
 
+  # plot journals x region share pie graph
   journal_share_plot = plt.figure()
   plt.title('Publicacoes em journals por regiao')
   plt.pie(journal_share, labels=region_labels, autopct='%1.1f%%')
   plt.show()
   journal_share_plot.savefig('journal_share.pdf')
 
+  # plot ids x region share pie graph
   id_share_plot = plt.figure()
   plt.title('Curriculos por regiao')
   plt.pie(id_share, labels=region_labels, autopct='%1.1f%%')
   plt.show()
   id_share_plot.savefig('id_share.pdf')
 
+  # plot conference means x region bar graph
   ind = list(range(len(conf_means)))
   conf_means_plot = plt.figure()
   plt.title('Media de publicacoes em conferencias por regiao')
@@ -163,6 +169,7 @@ def main(prod_data_path, act_data_path):
   plt.show()
   conf_means_plot.savefig('conf_means.pdf')
 
+  # plot journal means x region bar graph
   journal_means_plot = plt.figure()
   plt.title('Media de publicacoes em journals por regiao')
   plt.bar(ind, journal_means)
@@ -170,6 +177,7 @@ def main(prod_data_path, act_data_path):
   plt.show()
   journal_means_plot.savefig('journal_means.pdf')
 
+  # plot journals x region boxplot graph
   journals_boxplot = plt.figure()
   plt.title('Boxplot de publicacoes em journals por regiao')
   plt.boxplot([journals_by_region[region] for region in region_labels])
@@ -177,26 +185,31 @@ def main(prod_data_path, act_data_path):
   plt.show()
   journals_boxplot.savefig('journals_boxplot.pdf')
 
-  for region in region_labels:
-    journals_histogram = plt.figure()
-    plt.title('Histograma de publicacoes em journals para a regiao {}'.format(region))
-    plt.hist(journals_by_region[region], 50, range=(0,50))
-    plt.show()
-    journals_histogram.savefig('journals_histogram_{}.pdf'.format(region))
-
-  for region in region_labels:
-    confs_histogram = plt.figure()
-    plt.title('Histograma de publicacoes em conferencias para a regiao {}'.format(region))
-    plt.hist(confs_by_region[region], 50, range=(0,400))
-    plt.show()
-    confs_histogram.savefig('confs_histogram_{}.pdf'.format(region))
-
+  # plot conferences x region boxplot graph
   confs_boxplot = plt.figure()
   plt.title('Boxplot de publicacoes em conferencias por regiao')
   plt.boxplot([confs_by_region[region] for region in region_labels])
   plt.xticks(np.array(ind) + 1, region_labels)
   plt.show()
   confs_boxplot.savefig('confs_boxplot.pdf')
+
+  # plot per region histograms
+  for region in region_labels:
+    # journals x regions
+    journals_histogram = plt.figure()
+    plt.title('Histograma de publicacoes em journals para a regiao {}'.format(
+        region))
+    plt.hist(journals_by_region[region], 50, range=(0, 50))
+    plt.show()
+    journals_histogram.savefig('journals_histogram_{}.pdf'.format(region))
+
+    # confs x region
+    confs_histogram = plt.figure()
+    plt.title('Histograma de publicacoes em conferencias para a regiao {}'.
+              format(region))
+    plt.hist(confs_by_region[region], 50, range=(0, 400))
+    plt.show()
+    confs_histogram.savefig('confs_histogram_{}.pdf'.format(region))
 
 
 if __name__ == '__main__':
