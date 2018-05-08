@@ -181,7 +181,6 @@ def main(prod_data_path, act_data_path):
     journals_histogram = plt.figure()
     plt.title('Histograma de publicacoes em journals para a regiao {}'.format(region))
     plt.hist(journals_by_region[region], 50, range=(0,50))
-    #plt.xticks(np.array(ind) + 1, region_labels)
     plt.show()
     journals_histogram.savefig('journals_histogram_{}.pdf'.format(region))
 
