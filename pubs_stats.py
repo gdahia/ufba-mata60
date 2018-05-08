@@ -177,12 +177,13 @@ def main(prod_data_path, act_data_path):
   plt.show()
   journals_boxplot.savefig('journals_boxplot.pdf')
 
-  journals_histogram = plt.figure()
-  plt.title('Boxplot de publicacoes em journals por regiao')
-  plt.hist([journals_by_region['nordeste'], bins = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000])
-  #plt.xticks(np.array(ind) + 1, region_labels)
-  plt.show()
-  journals_boxplot.savefig('journals_histogram.pdf')
+  for region in region_labels:
+    journals_histogram = plt.figure()
+    plt.title('Histograma de publicacoes em journals para a regiao {}'.format(region))
+    plt.hist(journals_by_region[region], 50, range=(0,50))
+    #plt.xticks(np.array(ind) + 1, region_labels)
+    plt.show()
+    journals_histogram.savefig('journals_histogram_{}.pdf'.format(region))
 
   confs_boxplot = plt.figure()
   plt.title('Boxplot de publicacoes em conferencias por regiao')
