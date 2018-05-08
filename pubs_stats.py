@@ -189,7 +189,7 @@ def main(prod_data_path, act_data_path):
     plt.title('Histograma de publicacoes em conferencias para a regiao {}'.format(region))
     plt.hist(confs_by_region[region], 50, range=(0,400))
     plt.show()
-    journals_histogram.savefig('confs_histogram_{}.pdf'.format(region))
+    confs_histogram.savefig('confs_histogram_{}.pdf'.format(region))
 
   confs_boxplot = plt.figure()
   plt.title('Boxplot de publicacoes em conferencias por regiao')
