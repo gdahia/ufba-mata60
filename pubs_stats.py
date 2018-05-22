@@ -1,25 +1,15 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import argparse
-import csv
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
-
-def read_lattes_csv(f, remove_header=True):
-  data = list(csv.reader(f, delimiter=';'))
-  if remove_header:
-    data = data[1:]
-  return data
+import utils
 
 
 def main(prod_data_path, act_data_path):
   # load data from csvs
-  prod_data = read_lattes_csv(open(prod_data_path, 'r'))
-  act_data = read_lattes_csv(open(act_data_path, 'r'))
+  prod_data = utils.read_lattes_csv(open(prod_data_path, 'r'))
+  act_data = utils.read_lattes_csv(open(act_data_path, 'r'))
 
   # get 'unidade da federacao' (uf) for each id
   subject_ufs = dict()
