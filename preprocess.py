@@ -1,17 +1,6 @@
 import pandas as pd
 import numpy as np
 
-import utils
-
-
-def compute_n_collab(collab):
-  n_collab = np.zeros(np.max(collab[:, :2]), dtype=np.int32)
-  for v, u, w in collab:
-    n_collab[v - 1] += w
-    n_collab[u - 1] += w
-
-  return n_collab
-
 
 def drop_if_missing(data, spared_columns):
   for column in data.columns:
@@ -39,19 +28,30 @@ def preprocess(collab, work, edu):
   # join education data to running data
   data = data.join(edu, how='inner')
 
+  print(data)
+
 
 def main():
-  # load collaborations graph
+  # load collaborations graph in chunks
   print('Loading collaborations graph...')
-  collab = utils.read_lattes_csv(open(FLAGS.collab_data_path, 'r'))
-  collab = np.array(collab)
-  collab = collab[:, [0, 1, 3]].astype(np.int32)
-  print('Loaded.')
+  n_collab = np.zeros(265188, dtype=np.int32)
+  for chunk in pd.read_csv(
+      FLAGS.collab_data_path,
+      sep=';',
+      chunksize=FLAGS.chunk_sz,
+      dtype=np.int32,
+      usecols=[0, 1, 3]):
+    # retrieve edge's endpoints and weight
+    u, v, w = chunk
+    u = chunk[u]
+    v = chunk[v]
+    w = chunk[w]
 
-  # compute number of collaborations per subject
-  print('Computing number of collaborations...')
-  n_collab = compute_n_collab(collab)
-  print('Computed.')
+    # update degrees
+    n_collab[u - 1] += w
+    n_collab[v - 1] += w
+
+  print('Loaded.')
 
   # convert to pandas dataframe
   collab = pd.DataFrame(
@@ -94,6 +94,11 @@ if __name__ == '__main__':
       default='Formacao_Academica.csv',
       type=str,
       help='Path to educational data csv.')
+  parser.add_argument(
+      '--chunk_sz',
+      default=1123456,
+      type=int,
+      help='Chunk size to read large collaborations file.')
   FLAGS, _ = parser.parse_known_args()
 
   main()
