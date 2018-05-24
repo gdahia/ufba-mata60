@@ -10,7 +10,7 @@ def drop_if_missing(data, spared_columns):
   return data
 
 
-def preprocess(collab, work, edu, advs, prods, langs):
+def preprocess(collab, work, edu, advs, prods):
   # drop rows with no collaborations
   data = collab[collab['Colaboracoes'] != 0]
 
@@ -91,13 +91,7 @@ def main():
       usecols=lambda x: 'Ultima' not in x)
   print('Loaded.')
 
-  # load language proficiency
-  print('Loading language proficiency data...')
-  langs_path = os.path.join(FLAGS.data_path, 'Proficiencia.csv')
-  langs = pd.read_csv(langs_path, index_col='Identificador', sep=';')
-  print('Loaded.')
-
-  print(preprocess(collab, work, edu, adv, prods, langs))
+  print(preprocess(collab, work, edu, advs, prods))
 
 
 if __name__ == '__main__':
