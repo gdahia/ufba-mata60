@@ -29,6 +29,16 @@ def preprocess(collab, work, edu, advs, prods):
   # join education data to running data
   data = data.join(edu, how='inner')
 
+  # join advisees data to running data
+  data = data.join(advs, how='inner')
+
+  # remove rows with no scientific production
+  prods = prods[(prods != 0).any(axis=1)]
+
+  # join scientific production to running data
+  data = data.join(prods, how='inner')
+
+
   return data
 
 
