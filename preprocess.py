@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 
+import utils
+
 
 def drop_if_missing(data, spared_columns):
   for column in data.columns:
@@ -38,6 +40,21 @@ def preprocess(collab, work, edu, advs, prods):
   # join scientific production to running data
   data = data.join(prods, how='inner')
 
+  # compute collaborations probabilities
+  collab = data['Colaboracoes']
+  total = len(collab)
+  collab_prob = [np.sum(collab == x) / total for x in np.unique(collab)]
+
+  # compute mutual information between features
+  for column in data.columns:
+    if column != 'Colaboracoes':
+      mi = utils.mutual_information(
+          collab, data[column], X_marginal=collab_prob)
+      print('I({}; {}) = {}'.format('Colaboracoes', column, mi))
+
+      # discard zero information features
+      if np.isclose(mi, 0):
+        data = data.drop(columns=column)
 
   return data
 
