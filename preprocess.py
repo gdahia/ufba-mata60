@@ -76,8 +76,8 @@ def main():
 
   # load number of advisees
   print('Loading advising data...')
-  adv_path = os.path.join(FLAGS.data_path, 'Orientacoes.csv')
-  adv = pd.read_csv(adv_path, index_col='Identificador', sep=';')
+  advs_path = os.path.join(FLAGS.data_path, 'Orientacoes.csv')
+  advs = pd.read_csv(advs_path, index_col='Identificador', sep=';')
   print('Loaded.')
 
   # load number of scientific productions
