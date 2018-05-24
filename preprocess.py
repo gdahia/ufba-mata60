@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import utils
 
+import utils
+
 
 def drop_if_missing(data, spared_columns):
   for column in data.columns:
@@ -42,7 +44,7 @@ def padronizeString(str, isName):
   return str
 
 
-def preprocess(collab, work, edu, advs, prods, langs):
+def preprocess(collab, work, edu, advs, prods):
   # drop rows with no collaborations
   data = collab[collab['Colaboracoes'] != 0]
 
@@ -60,6 +62,31 @@ def preprocess(collab, work, edu, advs, prods, langs):
 
   # join education data to running data
   data = data.join(edu, how='inner')
+  
+  # join advisees data to running data
+  data = data.join(advs, how='inner')
+
+  # remove rows with no scientific production
+  prods = prods[(prods != 0).any(axis=1)]
+
+  # join scientific production to running data
+  data = data.join(prods, how='inner')
+
+  # compute collaborations probabilities
+  collab = data['Colaboracoes']
+  total = len(collab)
+  collab_prob = [np.sum(collab == x) / total for x in np.unique(collab)]
+
+  # compute mutual information between features
+  for column in data.columns:
+    if column != 'Colaboracoes':
+      mi = utils.mutual_information(
+          collab, data[column], X_marginal=collab_prob)
+      print('I({}; {}) = {}'.format('Colaboracoes', column, mi))
+
+      # discard zero information features
+      if np.isclose(mi, 0):
+        data = data.drop(columns=column)
 
   siglas = set()
 
@@ -226,8 +253,8 @@ def main():
 
   # load number of advisees
   print('Loading advising data...')
-  adv_path = os.path.join(FLAGS.data_path, 'Orientacoes.csv')
-  adv = pd.read_csv(adv_path, index_col='Identificador', sep=';')
+  advs_path = os.path.join(FLAGS.data_path, 'Orientacoes.csv')
+  advs = pd.read_csv(advs_path, index_col='Identificador', sep=';')
   print('Loaded.')
 
   # load number of scientific productions
@@ -241,13 +268,7 @@ def main():
       usecols=lambda x: 'Ultima' not in x)
   print('Loaded.')
 
-  # load language proficiency
-  print('Loading language proficiency data...')
-  langs_path = os.path.join(FLAGS.data_path, 'Proficiencia.csv')
-  langs = pd.read_csv(langs_path, index_col='Identificador', sep=';')
-  print('Loaded.')
-
-  print(preprocess(collab, work, edu, adv, prods, langs))
+  print(preprocess(collab, work, edu, advs, prods))
 
 
 if __name__ == '__main__':
