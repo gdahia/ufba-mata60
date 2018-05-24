@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import utils
 
 
 def drop_if_missing(data, spared_columns):
@@ -8,6 +9,37 @@ def drop_if_missing(data, spared_columns):
     if column.lower() not in spared_columns:
       data = data[~pd.isna(data[column])]
   return data
+
+
+def padronizeString(str, isName):
+  str = str.replace('.', ' ')
+  str = str.replace('*', ' ')
+  str = str.replace('/', ' ')
+  str = str.replace('-', ' ')
+  str = str.replace('0', ' ')
+  str = str.replace('1', ' ')
+  str = str.replace('2', ' ')
+  str = str.replace('3', ' ')
+  str = str.replace('4', ' ')
+  str = str.replace('5', ' ')
+  str = str.replace('6', ' ')
+  str = str.replace('7', ' ')
+  str = str.replace('8', ' ')
+  str = str.replace('9', ' ')
+  if isName:
+    flag = True
+    aux = ''
+    for chr in str:
+      if flag:
+        aux += chr
+        flag = False
+      if chr == ' ':
+        flag = True
+    str = aux
+  str = str.replace(' ', '')
+  str = str.upper()
+  
+  return str
 
 
 def preprocess(collab, work, edu, advs, prods, langs):
@@ -28,6 +60,124 @@ def preprocess(collab, work, edu, advs, prods, langs):
 
   # join education data to running data
   data = data.join(edu, how='inner')
+
+  siglas = set()
+
+  siglas.add('USP')
+  siglas.add('UFPE')
+  siglas.add('FGV')
+  siglas.add('UFBA')
+  siglas.add('UFRJ')
+  siglas.add('UFPR')
+  
+  success = 0
+  for local in data['local']:
+    # turn row into list
+    local = local.replace('-', ',')
+    local = list(local.split(','))
+    
+    # unpack
+    first_field, *_ = local
+
+    if first_field.upper() == 'UNIVERSIDADE FEDERAL DE PERNAMBUCO ':
+      siglas.add('UFPE')
+      success += 1
+
+    elif first_field.upper() == 'ESCOLA DE ENGENHARIA MAUA':
+      siglas.add('IMT')
+      success += 1
+
+    elif first_field == 'Centro Universitario Barao de Maua ':
+      siglas.add('CBM')
+      success += 1
+
+    elif first_field == 'USP ':
+      siglas.add('USP')
+      success += 1
+    
+    elif len(local) == 2:
+      # unpack
+      first_field, second_field = local
+
+      # process strings
+      first_field = padronizeString(first_field, True)
+      
+      second_field = padronizeString(second_field, False)
+
+      if first_field in siglas:
+        second_field = first_field
+
+      siglas.add(second_field)
+      success += 1
+
+    elif len(local) == 3:
+      # unpack
+      first_field, second_field, first_complement = local
+      
+      second_field = padronizeString(second_field, False)
+
+      if (second_field  == 'HUMANAS'):
+        second_field = 'FMV'
+      
+      first_field = padronizeString(first_field, True)
+
+      if first_field in siglas:
+        second_field = first_field
+      
+      first_field = padronizeString(first_field + first_complement, True)
+      
+      if first_field in siglas:
+        second_field = first_field
+
+      first_complement = padronizeString(first_complement, False)
+
+      if first_complement in siglas:
+        second_field = first_complement
+
+      if (utils.lcs(second_field, 'CIENCIAS') == 8):
+        second_field = 'UCV'
+
+      siglas.add(second_field)
+      success += 1
+
+    elif len(local) > 3:
+      first_field, first_complement, second_field, second_complement, *_ = local
+      second_field = padronizeString(second_field, False)
+
+      first_field = padronizeString(first_field, True)
+
+      if first_field in siglas:
+        second_field = first_field
+
+      first_field = padronizeString(first_field + first_complement, True)
+      
+      if first_field in siglas:
+        second_field = first_field
+
+      first_complement = padronizeString(first_complement, False)
+      
+      second_complement = padronizeString(second_complement, False)
+
+      if first_complement in siglas:
+        second_field = first_complement
+
+      if second_complement in siglas:
+        second_field = second_complement
+
+      if (second_field == '6'):
+        second_field = 'ENSAPB'
+
+      if (second_field  == 'GRADUACAO'):
+        second_field = 'FAESPE'
+      
+      siglas.add(second_field)
+      success += 1
+    else:
+      if local[0] in siglas:
+        success += 1
+
+  print(len(siglas))
+  print(success, len(data['local']) - success)
 
   return data
 
