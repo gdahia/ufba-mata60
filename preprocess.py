@@ -208,20 +208,15 @@ def main():
       chunksize=FLAGS.chunk_sz,
       dtype=np.int32,
       usecols=[0, 1, 3]):
-    # retrieve edge's endpoints and weight
-    u, v, w = chunk
-    u = chunk[u]
-    v = chunk[v]
-    w = chunk[w]
+    for _, (u, v, w) in chunk.iterrows():
+      # only keep remaining vertices
+      if u in rem_inds and v in rem_inds:
+        # add edge to filtered graph
+        edges.append((u, v, w))
 
-    # only keep remaining vertices
-    if u in rem_inds and v in rem_inds:
-      # add edge to filtered graph
-      edges.append((u, v, w))
-
-      # update filtered degrees
-      n_collab[u - 1] += w
-      n_collab[v - 1] += w
+        # update filtered degrees
+        n_collab[u - 1] += w
+        n_collab[v - 1] += w
   data['Colaboracoes'] = n_collab
   collab = pd.DataFrame(edges)
   print('Done.')
