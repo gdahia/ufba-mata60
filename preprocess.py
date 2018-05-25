@@ -190,7 +190,7 @@ def main():
     ind = np.arange(len(all_cols))
     plt.bar(ind, mis)
     plt.xticks(ind, all_cols, rotation='vertical')
-    plot.savefig(FLAGS.plot_path)
+    plot.savefig(FLAGS.plot_path, bbox_inches='tight')
 
   # print mutual informations
   for mi, col in zip(mis, all_cols):
