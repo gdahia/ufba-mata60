@@ -1,76 +1,91 @@
 import os
 import pandas as pd
 import numpy as np
-import utils
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.cluster import MiniBatchKMeans
 
 import utils
 
 
-def drop_if_missing(data, spared_columns):
+def drop_if_missing(data):
   for column in data.columns:
-    if column.lower() not in spared_columns:
-      data = data[~pd.isna(data[column])]
+    data = data[~pd.isna(data[column])]
   return data
 
 
-def padronizeString(str, isName):
-  str = str.replace('.', ' ')
-  str = str.replace('*', ' ')
-  str = str.replace('/', ' ')
-  str = str.replace('-', ' ')
-  str = str.replace('0', ' ')
-  str = str.replace('1', ' ')
-  str = str.replace('2', ' ')
-  str = str.replace('3', ' ')
-  str = str.replace('4', ' ')
-  str = str.replace('5', ' ')
-  str = str.replace('6', ' ')
-  str = str.replace('7', ' ')
-  str = str.replace('8', ' ')
-  str = str.replace('9', ' ')
-  if isName:
-    flag = True
-    aux = ''
-    for chr in str:
-      if flag:
-        aux += chr
-        flag = False
-      if chr == ' ':
-        flag = True
-    str = aux
-  str = str.replace(' ', '')
-  str = str.upper()
-  
-  return str
+def cluster_text(data, columns, n_clusters, stop_words=[]):
+  # retrieve all text
+  all_text = []
+  for column in sorted(columns):
+    all_text += list(data[column])
+
+  # get tf-idf matrix
+  vectorizer = TfidfVectorizer(stop_words=stop_words, sublinear_tf=True)
+  tfidf = vectorizer.fit_transform(all_text)
+
+  # perform LSA
+  lsa = TruncatedSVD(n_components=100)
+  X = lsa.fit_transform(tfidf)
+
+  # cluster with K-means
+  km = MiniBatchKMeans(n_clusters=n_clusters, batch_size=3 * n_clusters)
+  clustered = km.fit_predict(X)
+  clustered = np.reshape(clustered, (-1, len(data)))
+
+  # replace previous text with cluster index
+  col_ind = 0
+  for column in sorted(columns):
+    data[column] = clustered[col_ind]
+    col_ind += 1
+
+  return data
 
 
-def preprocess(collab, work, edu, advs, prods):
+def preprocess(collab, work, edu, advs, prods, stop_words=[]):
   # drop rows with no collaborations
   data = collab[collab['Colaboracoes'] != 0]
 
-  # drop work rows with missing values,
-  # except UF and country because
-  # both can be deducted
-  work = drop_if_missing(work, ('uf', 'pais'))
-
-  # join work data to running data
+  # drop work rows with missing
+  # vals and join to running data
+  work = drop_if_missing(work)
   data = data.join(work, how='inner')
 
   # drop edu rows with missing values
-  # except start and beginning dates
-  edu = drop_if_missing(edu, ('inicio', 'fim'))
+  # and coerce numerical types
+  for col in edu.columns:
+    if col in ('inicio', 'inicio.1', 'inicio.2', 'fim', 'fim.1', 'fim.2'):
+      edu[col] = pd.to_numeric(edu[col], errors='coerce')
+  edu = drop_if_missing(edu)
 
-  # join education data to running data
+  # join to running data
   data = data.join(edu, how='inner')
-  
+
   # join advisees data to running data
   data = data.join(advs, how='inner')
 
-  # remove rows with no scientific production
+  # remove rows with no scientific
+  # production and join to running data
   prods = prods[(prods != 0).any(axis=1)]
-
-  # join scientific production to running data
   data = data.join(prods, how='inner')
+
+  # since there is high variability in how users
+  # specify places and courses in their CVs, we
+  # cluster them  with LSA + K-Means
+
+  # cluster places
+  places = [col for col in data.columns
+            if 'local' in col] + ['Instituicao Atual']
+  data = cluster_text(
+      data, columns=places, n_clusters=3000, stop_words=stop_words)
+
+  # cluster higher education
+  courses = [
+      'doutorado', 'graduacao', 'especializacao', 'mestrado', 'pos-doutorado'
+  ]
+  data = cluster_text(
+      data, columns=courses, n_clusters=500, stop_words=stop_words)
 
   # compute collaborations probabilities
   collab = data['Colaboracoes']
@@ -78,135 +93,24 @@ def preprocess(collab, work, edu, advs, prods):
   collab_prob = [np.sum(collab == x) / total for x in np.unique(collab)]
 
   # compute mutual information between features
-  for column in data.columns:
+  # and discard those that are independent from
+  # collaborations
+  all_cols = []
+  mis = []
+  for column in sorted(data.columns):
     if column != 'Colaboracoes':
+      # compute mutual information
       mi = utils.mutual_information(
           collab, data[column], X_marginal=collab_prob)
-      print('I({}; {}) = {}'.format('Colaboracoes', column, mi))
 
-      # discard zero information features
+      all_cols.append(column)
+      mis.append(mi)
+
+      # discard independent features
       if np.isclose(mi, 0):
         data = data.drop(columns=column)
 
-  siglas = set()
-
-  siglas.add('USP')
-  siglas.add('UFPE')
-  siglas.add('FGV')
-  siglas.add('UFBA')
-  siglas.add('UFRJ')
-  siglas.add('UFPR')
-  
-  success = 0
-  for local in data['local']:
-    # turn row into list
-    local = local.replace('-', ',')
-    local = list(local.split(','))
-    
-    # unpack
-    first_field, *_ = local
-
-    if first_field.upper() == 'UNIVERSIDADE FEDERAL DE PERNAMBUCO ':
-      siglas.add('UFPE')
-      success += 1
-
-    elif first_field.upper() == 'ESCOLA DE ENGENHARIA MAUA':
-      siglas.add('IMT')
-      success += 1
-
-    elif first_field == 'Centro Universitario Barao de Maua ':
-      siglas.add('CBM')
-      success += 1
-
-    elif first_field == 'USP ':
-      siglas.add('USP')
-      success += 1
-    
-    elif len(local) == 2:
-      # unpack
-      first_field, second_field = local
-
-      # process strings
-      first_field = padronizeString(first_field, True)
-      
-      second_field = padronizeString(second_field, False)
-
-      if first_field in siglas:
-        second_field = first_field
-
-      siglas.add(second_field)
-      success += 1
-
-    elif len(local) == 3:
-      # unpack
-      first_field, second_field, first_complement = local
-      
-      second_field = padronizeString(second_field, False)
-
-      if (second_field  == 'HUMANAS'):
-        second_field = 'FMV'
-      
-      first_field = padronizeString(first_field, True)
-
-      if first_field in siglas:
-        second_field = first_field
-      
-      first_field = padronizeString(first_field + first_complement, True)
-      
-      if first_field in siglas:
-        second_field = first_field
-
-      first_complement = padronizeString(first_complement, False)
-
-      if first_complement in siglas:
-        second_field = first_complement
-
-      if (utils.lcs(second_field, 'CIENCIAS') == 8):
-        second_field = 'UCV'
-
-      siglas.add(second_field)
-      success += 1
-
-    elif len(local) > 3:
-      first_field, first_complement, second_field, second_complement, *_ = local
-      second_field = padronizeString(second_field, False)
-
-      first_field = padronizeString(first_field, True)
-
-      if first_field in siglas:
-        second_field = first_field
-
-      first_field = padronizeString(first_field + first_complement, True)
-      
-      if first_field in siglas:
-        second_field = first_field
-
-      first_complement = padronizeString(first_complement, False)
-      
-      second_complement = padronizeString(second_complement, False)
-
-      if first_complement in siglas:
-        second_field = first_complement
-
-      if second_complement in siglas:
-        second_field = second_complement
-
-      if (second_field == '6'):
-        second_field = 'ENSAPB'
-
-      if (second_field  == 'GRADUACAO'):
-        second_field = 'FAESPE'
-      
-      siglas.add(second_field)
-      success += 1
-    else:
-      if local[0] in siglas:
-        success += 1
-
-  print(len(siglas))
-  print(success, len(data['local']) - success)
-
-  return data
+  return data, mis, all_cols
 
 
 def main():
@@ -258,7 +162,7 @@ def main():
   print('Loaded.')
 
   # load number of scientific productions
-  # discarding last update
+  # discarding last update date
   print('Loading scientific production data...')
   prods_path = os.path.join(FLAGS.data_path, 'Producao_Cientifica.csv')
   prods = pd.read_csv(
@@ -268,7 +172,67 @@ def main():
       usecols=lambda x: 'Ultima' not in x)
   print('Loaded.')
 
-  print(preprocess(collab, work, edu, advs, prods))
+  # load higher education institutions
+  print('Loading portuguese stop words...')
+  stop_words_path = os.path.join(FLAGS.data_path, 'stop_words.txt')
+  stop_words = [w.strip() for w in open(stop_words_path, 'r')]
+  print('Loaded.')
+
+  print('Processing data...')
+  data, mis, all_cols = preprocess(collab, work, edu, advs, prods, stop_words)
+  print('Processed.')
+
+  # plot
+  if FLAGS.plot_path is not None:
+    import matplotlib.pyplot as plt
+    plot = plt.figure()
+    plt.title('Informacao mutua com "Colaboracoes"')
+    ind = np.arange(len(all_cols))
+    plt.bar(ind, mis)
+    plt.xticks(ind, all_cols, rotation='vertical')
+    plot.savefig(FLAGS.plot_path)
+
+  # print mutual informations
+  for mi, col in zip(mis, all_cols):
+    print('I(Colaboracoes; {}) = {}'.format(col, mi))
+
+  # filter collaborations graph with
+  # with only remaining indices
+  rem_inds = set(data.index.values)
+  edges = []
+  n_collab = np.zeros(265188, dtype=np.int32)
+  print('Filtering collaborations graph...')
+  for chunk in pd.read_csv(
+      collab_path,
+      sep=';',
+      chunksize=FLAGS.chunk_sz,
+      dtype=np.int32,
+      usecols=[0, 1, 3]):
+    # retrieve edge's endpoints and weight
+    u, v, w = chunk
+    u = chunk[u]
+    v = chunk[v]
+    w = chunk[w]
+
+    # only keep remaining vertices
+    if u in rem_inds and v in rem_inds:
+      # add edge to filtered graph
+      edges.append((u, v, w))
+
+      # update filtered degrees
+      n_collab[u - 1] += w
+      n_collab[v - 1] += w
+  data['Colaboracoes'] = n_collab
+  collab = pd.DataFrame(edges)
+  print('Done.')
+
+  # save processed data
+  print('Saving results...')
+  data_path = os.path.join(FLAGS.results_path, 'preprocessed.csv')
+  collab_path = os.path.join(FLAGS.results_path, 'collaborations.csv')
+  data.to_csv(data_path, sep=';')
+  collab.to_csv(collab_path, sep=';')
+  print('Saved.')
 
 
 if __name__ == '__main__':
@@ -282,6 +246,16 @@ if __name__ == '__main__':
       default=1123456,
       type=int,
       help='Chunk size to read large collaborations file.')
+  parser.add_argument(
+      '--plot_path',
+      default=None,
+      type=str,
+      help='Path to save mutual information plot.')
+  parser.add_argument(
+      '--results_path',
+      default='.',
+      type=str,
+      help='Path to save resulting csvs.')
   FLAGS, _ = parser.parse_known_args()
 
   main()
