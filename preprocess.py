@@ -189,7 +189,7 @@ def main():
     plt.title('Informacao mutua com "Colaboracoes"')
     ind = np.arange(len(all_cols))
     plt.bar(ind, mis)
-    plt.xticks(ind, all_cols, rotation='vertical')
+    plt.xticks(ind, all_cols, fontsize=7, rotation='vertical')
     plot.savefig(FLAGS.plot_path, bbox_inches='tight')
 
   # print mutual informations
