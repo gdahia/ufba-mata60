@@ -78,7 +78,7 @@ def main():
   plot = plt.figure()
   plt.title('Colaboracoes de todas as regioes')
   edges = [edge for region_edges in edges for edge in region_edges]
-  plt.hist(edges, bins=len(np.unique(edges)))
+  plt.hist(edges, bins=len(np.unique(edges)), log=True)
   plot.savefig(plot_path, bbox_inches='tight')
 
   # plot individual inter results
@@ -100,7 +100,7 @@ def main():
     plot = plt.figure()
     plt.title('Colaboracoes de {}'.format(region))
     edges = [edge for edge in edges_by_region[region]]
-    plt.hist(edges, bins=len(np.unique(edges)))
+    plt.hist(edges, bins=len(np.unique(edges)), log=True)
     plot.savefig(plot_path, bbox_inches='tight')
 
 
