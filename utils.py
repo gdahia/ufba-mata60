@@ -1,13 +1,4 @@
 import numpy as np
-import csv
-import numpy as np
-
-
-def read_lattes_csv(f, remove_header=True):
-  data = list(csv.reader(f, delimiter=';'))
-  if remove_header:
-    data = data[1:]
-  return data
 
 
 def mutual_information(X, Y, X_marginal=None, Y_marginal=None):
