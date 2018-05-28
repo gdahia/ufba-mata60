@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 def stats():
   # compute resources required for statistics
   # online, while loading collaborations graph
+  print('Computing statistics...')
   collab_path = os.path.join(FLAGS.data_path, 'Colaboracoes.csv')
   n_collab = np.zeros(265187, dtype=np.int32)
   edges = []
@@ -22,10 +23,10 @@ def stats():
       edges.append(w)
 
   # compute degree statistics
-  mean_degree = np.mean(n_collab)
-  var_degree = np.var(n_collab)
-  print('E[degree] = {}'.format(mean_degree))
-  print('Var[degree] = {}'.format(var_degree))
+  mean_degree = np.round(np.mean(n_collab))
+  std_degree = np.round(np.std(n_collab))
+  print('E[collabs] = {}'.format(mean_degree))
+  print('Std[collabs] = {}'.format(std_degree))
   print()
 
   # plot degree histogram
@@ -37,23 +38,18 @@ def stats():
 
   # compute active degree statistics
   active_collabs = n_collab[np.nonzero(n_collab)]
-  mean_active_degree = np.mean(active_collabs)
-  var_active_degree = np.var(active_collabs)
-  print('#active collaborators = {}'.format(len(active_collabs)))
-  print('E[degree|active] = {}'.format(mean_active_degree))
-  print('Var[degree|active] = {}'.format(var_active_degree))
+  mean_active_degree = np.round(np.mean(active_collabs))
+  std_active_degree = np.round(np.std(active_collabs))
+  print('#active collaborators = {}'.format(np.round(len(active_collabs))))
+  print('E[degree|active] = {}'.format(
+      np.round(len(edges) / len(active_collabs))))
+  print('E[collabs|active] = {}'.format(mean_active_degree))
+  print('Std[collabs|active] = {}'.format(std_active_degree))
   print()
 
-  # plot active degree histogram
-  plot_path = os.path.join(FLAGS.results_path, 'active_degree_histogram.pdf')
-  plot = plt.figure()
-  plt.title('Histograma de colaboracoes por curriculo ativo')
-  plt.hist(active_collabs, bins=len(np.unique(active_collabs)) // 10, log=True)
-  plot.savefig(plot_path, bbox_inches='tight')
-
   # compute weight statistics
-  print('E[w] = {}'.format(np.mean(edges)))
-  print('Var[w] = {}'.format(np.var(edges)))
+  print('E[w] = {}'.format(np.round(np.mean(edges))))
+  print('Std[w] = {}'.format(np.round(np.std(edges))))
 
   # plot weight histogram
   plot_path = os.path.join(FLAGS.results_path, 'weight_histogram.pdf')
@@ -67,7 +63,7 @@ if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--data_path', default='.', type=str, help='Path to dataset.')
+      '--data_path', default='data', type=str, help='Path to dataset.')
   parser.add_argument(
       '--chunk_size',
       default=112345,
@@ -75,7 +71,7 @@ if __name__ == '__main__':
       help='Chunk size to read large collaborations file.')
   parser.add_argument(
       '--results_path',
-      default='.',
+      default=os.path.join('report', 'graphs'),
       type=str,
       help='Path to save resulting plots.')
   FLAGS, _ = parser.parse_known_args()
