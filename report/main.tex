@@ -3,12 +3,11 @@
 \usepackage{sbc-template}
 
 \usepackage{graphicx,url}
-\usepackage{subfigure}
+\usepackage{amssymb}
 
 \usepackage[brazil]{babel}   
 
 \usepackage[utf8]{inputenc}
-
      
 \sloppy
 
@@ -82,7 +81,7 @@ Isso revela que, apesar de a maioria dos doutores colaborarem e terem diversos c
 \centering
   \includegraphics[width=0.45\textwidth]{graphs/degree_histogram.pdf}
   \includegraphics[width=0.45\textwidth]{graphs/weight_histogram.pdf}
-  \caption{Histogramas de colaboracao por todos os currículos, à esquerda, e de produtividade por colaboração, à direita. Detalhe para o eixo vertical, em escala logaritímica.}
+  \caption{Histogramas de colaboracao por todos os currículos, à esquerda, e de produtividade por colaboração, à direita. Detalhe para o eixo vertical, em escala logaritmica.}
   \label{fig:collabs}
 \end{figure}
 
@@ -93,8 +92,49 @@ Desses histogramas, pode-se perceber que mesmo entre aqueles que já colaboram, 
 \section{Metodologia}
 \label{sec:methods}
 
+Para sugerir colaborações entre os doutores da base, primeiramente foi feito um pré-processamento na base de dados.
+Este envolveu remover currículos com informações inconsistentes ou faltantes, agrupar as localizações e dados sobre a formação dos doutores, que são preenchidos livremente na Plataforma Lattes, utilizando técnicas de mineração de texto, e a remoção de atributos irrelevantes para a tarefa proposta.
+
 \subsection{Pré-processamento}
 \label{sec:preprocess}
+
+O primeiro passo do pré-processamento é o descarte de currículos que não tenham colaborações relatadas ou com informações faltantes.
+Nessa etapa, todo currículo com valores inválidos nos campos de atuação profissional, e, excetuando o campo ``\texttt{pos-doutorado}'', de formação acadêmica, são descartados.
+Além disso, currículos que não tenham produção científica também são descartados, por entedermos que é um pré-requisito ao título de doutor a alguma produção científica.
+Campos cujos significados não estão claros na formatação da base, como a seção de proficiência em línguas e os últimos campos da formação acadêmica, também foram descartados.
+
+Os campos que podem ser especificados livremente no Currículo Lattes apresentam enorme variabilidade na maneira de especificar a mesma informação.
+Por exemplo, em local de graduação, usuários podem especificar ``USP'', ``Universidade de São Paulo'' e ``Univ. de SP'' para se referir a mesma instituição.
+
+Consideramos dois conjuntos de campos em que a variabilidade se sobressai.
+O primeiro dele, a que denominou-se \texttt{lugares}, consiste de todos os campos prefixados por ``\texttt{local}'' e o campo ``\texttt{Instituicao Atual}''.
+O segundo, chamado de \texttt{formacao}, contém ``\texttt{doutorado}'', ``\texttt{graduacao}'', ``\texttt{especializacao}'', ``\texttt{mestrado}'' e ``\texttt{pos-doutorado}''.
+
+Para mitigar os efeitos da variabilidade, utilizou-se \emph{Latent Semantic Analysis} (LSA) \cite{lsa}, considerando cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual, cada valor desses campos foi transformado em um vetor no espaço $\mathbb{R}^{100}$.
+Em seguida, foi aplicado o algoritmo \emph{k-Means} para classificar o conjunto de valores dos campos em 500, no caso de \texttt{formacao}, ou 3000 grupos, no caso de \texttt{lugares}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\textwidth]{graphs/mutual_information.pdf}
+  \caption{Informação mútua de cada atributo com o atributo Colaborações}
+  \label{fig:mutual-info}
+\end{figure}
+
+Depois de agrupados os atributos acima, calculamos a produtividade de cada doutor como a soma das produtividades de cada uma das suas colaborações e adicionamos essa informação a base como o atributo ``\texttt{Colaboracoes}''.
+Utilizando esse atributo como preditor da tarefa que visa-se resolver, calculamos, entre todo outro atributo $X$ da base de dados e $Y = \texttt{Colaboracoes}$ a informação mútua $I$:
+
+\begin{equation}
+  I(X; Y) = \sum_{y \in Y} \sum_{x \in X} p(x, y) \log \left( \frac{p(x, y)}{p(x)p(y)} \right),
+\end{equation}
+
+onde $p(x, y)$ é a probabilidade conjunta de $X$ e $Y$, e $p(x)$ e $p(y)$ são, respectivamente, as probabilidades marginais de $X$ e $Y$.
+Informalmente, $I(X; Y)$ mede quão independente $X$ é de $Y$ e vice-versa; isso permite quantificar dependências não-lineares entre as distribuições estudadas, diferentemente de outras métricas, como por exemplo correlação, onde apenas dependências lineares são quantificadas.
+
+A figura \ref{fig:mutual-info} mostra a informação mútua entre os atributos e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
+Nessa etapa, todos os atributos $X$ tais que $I(X; Y) = 0$ foram descartados das análises subsequentes.
+
+\subsection{Modelo de mineração de dados}
+\label{sec:datamine}
 
 \section{Resultados}
 \label{sec:results}
