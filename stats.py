@@ -69,7 +69,7 @@ def main():
   plot_path = os.path.join(FLAGS.results_path, 'all.pdf')
   plot = plt.figure()
   plt.title('Colaboracoes por regiao')
-  plt.boxplot(edges)
+  plt.boxplot(edges, showfliers=False)
   plt.xticks(np.arange(1, len(labels) + 1), labels, rotation='vertical')
   plot.savefig(plot_path, bbox_inches='tight')
 
@@ -79,7 +79,7 @@ def main():
     plot_path = os.path.join(FLAGS.results_path, '{}.pdf'.format(region))
     plot = plt.figure()
     plt.title('Colaboracoes com "{}"'.format(region))
-    plt.boxplot(edges)
+    plt.boxplot(edges, showfliers=False)
     plt.xticks(np.arange(1, len(labels) + 1), labels, rotation='vertical')
     plot.savefig(plot_path, bbox_inches='tight')
 
