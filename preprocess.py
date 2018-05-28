@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--data_path', default='.', type=str, help='Path to dataset path.')
+      '--data_path', default='data', type=str, help='Path to dataset.')
   parser.add_argument(
       '--chunk_sz',
       default=1123456,
@@ -251,7 +251,7 @@ if __name__ == '__main__':
       help='Path to save mutual information plot.')
   parser.add_argument(
       '--results_path',
-      default='.',
+      default='data',
       type=str,
       help='Path to save resulting csvs.')
   FLAGS, _ = parser.parse_known_args()
