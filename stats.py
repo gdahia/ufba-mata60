@@ -66,21 +66,41 @@ def main():
 
   # plot region results
   labels, edges = zip(*edges_by_region.items())
-  plot_path = os.path.join(FLAGS.results_path, 'all.pdf')
+  plot_path = os.path.join(FLAGS.results_path, 'all_boxplot.pdf')
   plot = plt.figure()
   plt.title('Colaboracoes por regiao')
   plt.boxplot(edges, showfliers=False)
   plt.xticks(np.arange(1, len(labels) + 1), labels, rotation='vertical')
   plot.savefig(plot_path, bbox_inches='tight')
 
-  # plot inter results
+  # plot all histogram
+  plot_path = os.path.join(FLAGS.results_path, 'all_histogram.pdf')
+  plot = plt.figure()
+  plt.title('Colaboracoes de todas as regioes')
+  edges = [edge for region_edges in edges for edge in region_edges]
+  plt.hist(edges, bins=len(np.unique(edges)))
+  plot.savefig(plot_path, bbox_inches='tight')
+
+  # plot individual inter results
+  # boxplots and individual histograms
   for region in sorted(regions)[:-1]:
+    # plot inter boxplot result
     labels, edges = zip(*inter_edges[region].items())
-    plot_path = os.path.join(FLAGS.results_path, '{}.pdf'.format(region))
+    plot_path = os.path.join(FLAGS.results_path,
+                             '{}_boxplot.pdf'.format(region))
     plot = plt.figure()
     plt.title('Colaboracoes com "{}"'.format(region))
     plt.boxplot(edges, showfliers=False)
     plt.xticks(np.arange(1, len(labels) + 1), labels, rotation='vertical')
+    plot.savefig(plot_path, bbox_inches='tight')
+
+    # plot individual histogram
+    plot_path = os.path.join(FLAGS.results_path,
+                             '{}_histogram.pdf'.format(region))
+    plot = plt.figure()
+    plt.title('Colaboracoes de {}'.format(region))
+    edges = [edge for edge in edges_by_region[region]]
+    plt.hist(edges, bins=len(np.unique(edges)))
     plot.savefig(plot_path, bbox_inches='tight')
 
 
@@ -88,7 +108,7 @@ if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--data_path', default='.', type=str, help='Path to dataset path.')
+      '--data_path', default='.', type=str, help='Path to dataset.')
   parser.add_argument(
       '--chunk_size',
       default=112345,
