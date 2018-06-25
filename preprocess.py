@@ -54,12 +54,13 @@ def preprocess(collab, work, edu, advs, prods, stop_words=[]):
 
   # coerce numerical types in edu and
   # drop rows with missing values,
-  # except post-doc, which can be NaN
+  # except post-doc and specialization,
+  # which can be NaN
   for col in edu.columns:
     if col in ('inicio', 'inicio.1', 'inicio.2', 'fim', 'fim.1', 'fim.2'):
       edu[col] = pd.to_numeric(edu[col], errors='coerce')
   for column in edu.columns:
-    if column != 'pos-doutorado':
+    if column != 'pos-doutorado' and column != 'especializacao':
       edu = edu[~pd.isna(edu[column])]
 
   # join to running data
