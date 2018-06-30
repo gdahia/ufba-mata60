@@ -221,7 +221,7 @@ def main():
         # update filtered degrees
         n_collab[u - 1] += w
         n_collab[v - 1] += w
-  data['Colaboracoes'] = n_collab[data.index.values]
+
   collab = pd.DataFrame(edges)
   print('Done.')
 
