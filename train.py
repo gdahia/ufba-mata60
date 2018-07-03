@@ -9,13 +9,16 @@ def train(cvs, collabs, binary=True):
   instances = []
   labels = []
   for _, (u, v, w) in collabs.iterrows():
-    # generate instance
+    # generate instances
     u = cvs.loc[[u]]
     v = cvs.loc[[v]]
-    instance = np.squeeze(np.concatenate([u, v], axis=1))
-    instances.append(instance)
+    instance1 = np.squeeze(np.concatenate([u, v], axis=1))
+    instance2 = np.squeeze(np.concatenate([v, u], axis=1))
+    instances.append(instance1)
+    instances.append(instance2)
 
-    # generate label
+    # generate labels
+    labels.append(w)
     labels.append(w)
 
 
