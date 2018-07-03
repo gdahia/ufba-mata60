@@ -4,7 +4,7 @@ import pandas as pd
 FLAGS = None
 
 
-def train(cvs, collabs, binary=True):
+def create_dataset(cvs, collabs, binary=True):
   # generate positive examples
   instances = []
   labels = []
@@ -57,9 +57,12 @@ def train(cvs, collabs, binary=True):
 
         break
 
+  return instances, labels
+
 
 def main():
   import os
+  import pickle
 
   # derandomize, if 'FLAGS.seed' is not None
   np.random.seed(FLAGS.seed)
@@ -72,7 +75,11 @@ def main():
   collabs_path = os.path.join(FLAGS.data_path, 'collaborations.csv')
   collabs = pd.read_csv(collabs_path, sep=';', index_col=0)
 
-  train(cvs, collabs)
+  dataset = create_dataset(cvs, collabs)
+
+  # save dataset to file
+  with open(FLAGS.save_path, 'wb') as output:
+    pickle.dump(dataset, output, -1)
 
 
 if __name__ == '__main__':
@@ -83,9 +90,9 @@ if __name__ == '__main__':
       '--data_path', default='data', type=str, help='path to dataset')
   parser.add_argument(
       '--save_path',
-      default='train',
+      default='dataset.pkl',
       type=str,
-      help='path to save resulting model')
+      help='path to save resulting dataset')
   parser.add_argument('--seed', type=int, help='random seed')
   FLAGS = parser.parse_args()
 
