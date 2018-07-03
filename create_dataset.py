@@ -4,7 +4,7 @@ import pandas as pd
 FLAGS = None
 
 
-def create_dataset(cvs, collabs, binary=True):
+def create_dataset(cvs, collabs):
   # generate positive examples
   instances = []
   labels = []
