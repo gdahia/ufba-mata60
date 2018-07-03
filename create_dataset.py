@@ -68,14 +68,18 @@ def main():
   np.random.seed(FLAGS.seed)
 
   # load cvs dataset
+  print('Loading preprocessed data...')
   cvs_path = os.path.join(FLAGS.data_path, 'preprocessed.csv')
   cvs = pd.read_csv(cvs_path, sep=';', index_col=0)
 
   # load collaborations
   collabs_path = os.path.join(FLAGS.data_path, 'collaborations.csv')
   collabs = pd.read_csv(collabs_path, sep=';', index_col=0)
+  print('Done')
 
+  print('Creating dataset...')
   dataset = create_dataset(cvs, collabs)
+  print('Done')
 
   # save dataset to file
   with open(FLAGS.save_path, 'wb') as output:
