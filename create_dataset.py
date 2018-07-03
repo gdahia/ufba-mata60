@@ -1,10 +1,10 @@
 import numpy as np
-import pandas as pd
+from sklearn.model_selection import train_test_split
 
 FLAGS = None
 
 
-def create_dataset(cvs, collabs):
+def create_dataset(cvs, collabs, test_size):
   # generate positive examples
   instances = []
   labels = []
@@ -57,12 +57,17 @@ def create_dataset(cvs, collabs):
 
         break
 
-  return instances, labels
+  # split dataset into train/test
+  instances_train, instances_test, labels_train, labels_test = train_test_split(
+      instances, labels, test_size=test_size, stratify=labels)
+
+  return (instances_train, labels_train), (instances_test, labels_test)
 
 
 def main():
   import os
   import pickle
+  import pandas as pd
 
   # derandomize, if 'FLAGS.seed' is not None
   np.random.seed(FLAGS.seed)
@@ -78,12 +83,22 @@ def main():
   print('Done')
 
   print('Creating dataset...')
-  dataset = create_dataset(cvs, collabs)
+  train, test = create_dataset(cvs, collabs, FLAGS.test_size)
   print('Done')
 
-  # save dataset to file
-  with open(FLAGS.save_path, 'wb') as output:
-    pickle.dump(dataset, output, -1)
+  # save train dataset
+  print('Saving training dataset...')
+  train_path = os.path.join(FLAGS.save_path, 'train.pkl')
+  with open(train_path, 'wb') as output:
+    pickle.dump(train, output, -1)
+  print('Done')
+
+  # save test dataset
+  print('Saving training dataset...')
+  test_path = os.path.join(FLAGS.save_path, 'test.pkl')
+  with open(test_path, 'wb') as output:
+    pickle.dump(test, output, -1)
+  print('Done')
 
 
 if __name__ == '__main__':
@@ -94,9 +109,14 @@ if __name__ == '__main__':
       '--data_path', default='data', type=str, help='path to dataset')
   parser.add_argument(
       '--save_path',
-      default='dataset.pkl',
+      default='data',
       type=str,
       help='path to save resulting dataset')
+  parser.add_argument(
+      '--test_size',
+      default=0.4,
+      type=float,
+      help='share of dataset for testing')
   parser.add_argument('--seed', type=int, help='random seed')
   FLAGS = parser.parse_args()
 
