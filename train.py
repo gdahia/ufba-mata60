@@ -13,13 +13,6 @@ def train(instances, labels, binary=True):
     # squash non-zero labels to label 1
     labels = np.array(labels != 0, dtype=np.uint8)
 
-  # convert instance to sklearn compatible format
-  instances = np.asarray(instances)
-  for index in range(np.shape(instances)[1]):
-    if isinstance(instances[0, index], str):
-      string_col = instances[:, index]
-      _, instances[:, index] = np.unique(string_col, return_inverse=True)
-
   # create random forest classifier model
   model = RandomForestClassifier()
   model.fit(instances, labels)

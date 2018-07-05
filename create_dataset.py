@@ -76,6 +76,14 @@ def create_dataset(cvs, collabs, test_size):
 
         break
 
+  # convert instance to sklearn compatible format
+  instances = np.asarray(instances)
+  for index in range(np.shape(instances)[1]):
+    if isinstance(instances[0, index], str):
+      string_col = instances[:, index]
+      _, instances[:, index] = np.unique(string_col, return_inverse=True)
+  instances = list(instances)
+
   # generate binary labels for stratification
   binary_labels = np.array(labels)
   binary_labels = np.array(binary_labels != 0, dtype=np.uint8)
