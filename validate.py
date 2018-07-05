@@ -25,9 +25,6 @@ def validate(model, instances, labels, binary=True):
 def main():
   import pickle
 
-  # use provided random seed for derandomization
-  np.random.seed(FLAGS.seed)
-
   # load test set
   print('Loading test set...')
   instances = None
@@ -50,7 +47,6 @@ if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('--seed', type=int, help='random seed')
   parser.add_argument(
       '--data_path', required=True, type=str, help='path to test set')
   parser.add_argument(
