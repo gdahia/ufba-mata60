@@ -55,6 +55,10 @@ def create_dataset(cvs, collabs, test_size):
         labels.append(0)
         labels.append(0)
 
+        # add non-edge to edges
+        edges.append((u_row, v_row))
+        edges.append((v_row, u_row))
+
         break
 
   # split dataset into train/test
