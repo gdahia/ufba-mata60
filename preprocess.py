@@ -118,6 +118,9 @@ def preprocess(collab, work, edu, advs, prods, stop_words=[]):
 
 
 def main():
+  # use provided random seed for derandomization
+  np.random.seed(FLAGS.seed)
+
   # load collaborations graph in chunks
   print('Loading collaborations graph...')
   n_collab = np.zeros(265188, dtype=np.int32)
@@ -258,6 +261,7 @@ if __name__ == '__main__':
       default='data',
       type=str,
       help='Path to save resulting csvs.')
+  parser.add_argument('--seed', type=int, help='random seed')
   FLAGS, _ = parser.parse_known_args()
 
   main()
