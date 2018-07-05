@@ -44,3 +44,48 @@ optional arguments:
   --seed SEED           random seed
 ```
 
+Depois da etapa de pré-processamento, é necessário realizar a preparação e divisão dos dados em conjunto de treino e teste. Isso é feito com `python3 -m create_dataset --seed 0`. Para esse código, as opções são:
+```
+usage: create_dataset.py [-h] [--data_path DATA_PATH] [--save_path SAVE_PATH]
+                         [--test_size TEST_SIZE] [--seed SEED]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data_path DATA_PATH
+                        path to dataset
+  --save_path SAVE_PATH
+                        path to save resulting dataset
+  --test_size TEST_SIZE
+                        share of dataset for testing
+  --seed SEED           random seed
+```
+
+Para treinar o modelo, o comando é `python3 -m train --seed 0 --data_path data/train.pkl --binary`. Suas opções são:
+```
+usage: train.py [-h] --data_path DATA_PATH [--save_path SAVE_PATH]
+                [--seed SEED] [--n_trees N_TREES] [--binary]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data_path DATA_PATH
+                        path to training dataset
+  --save_path SAVE_PATH
+                        path to save resulting model
+  --seed SEED           random seed
+  --n_trees N_TREES     number of tree estimators in random forest classifier
+  --binary              use this flag to perform binary classification
+```
+
+Por último, para validar o modelo, faça `python3 -m validate --binary --data_path data/test.pkl --model_path data/model.pkl`. Esse código admite as opções:
+```
+usage: validate.py [-h] --data_path DATA_PATH --model_path MODEL_PATH
+                   [--binary]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data_path DATA_PATH
+                        path to test set
+  --model_path MODEL_PATH
+                        path to trained classifier model
+  --binary              use this flag to perform binary classification
+```
