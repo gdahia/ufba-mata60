@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 FLAGS = None
 
 
-def train(instances, labels, binary=True):
+def train(instances, labels, binary=True, n_estimators=10):
   # convert labels to binary, if required
   if binary:
     # convert labels to np array
@@ -14,7 +14,7 @@ def train(instances, labels, binary=True):
     labels = np.array(labels != 0, dtype=np.uint8)
 
   # create random forest classifier model
-  model = RandomForestClassifier()
+  model = RandomForestClassifier(n_estimators=n_estimators)
   model.fit(instances, labels)
 
   return model
@@ -37,7 +37,8 @@ def main():
 
   # create classifier model
   print('Creating classifier model...')
-  model = train(instances, labels, binary=FLAGS.binary)
+  model = train(
+      instances, labels, binary=FLAGS.binary, n_estimators=FLAGS.n_trees)
   print('Done')
 
   # save file
@@ -60,6 +61,11 @@ if __name__ == '__main__':
       type=str,
       help='path to save resulting model')
   parser.add_argument('--seed', type=int, help='random seed')
+  parser.add_argument(
+      '--n_trees',
+      default=10,
+      type=int,
+      help='number of tree estimators in random forest classifier')
   parser.add_argument(
       '--binary',
       action='store_true',
