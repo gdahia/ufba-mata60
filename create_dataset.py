@@ -5,35 +5,52 @@ from sklearn.model_selection import train_test_split
 FLAGS = None
 
 
+def add_reverse_instances(instances, labels, n_features):
+  rev_instances = []
+  for i, instance in enumerate(instances):
+    # split into subjects
+    fst = instance[:n_features]
+    snd = instance[n_features:]
+
+    # add reverse instance
+    instance = np.squeeze(np.concatenate([snd, fst]))
+    rev_instances.append(instance)
+
+    # generate corresponding label
+    labels.append(labels[i])
+
+  # unify reverse instances and original instances
+  instances.extend(rev_instances)
+
+  return instances, labels
+
+
 def create_dataset(cvs, collabs, test_size):
+  # number of features
+  n_features = len(cvs.columns)
+
   # generate positive examples
   instances = []
   labels = []
-  edges = []
+  edges = set()
   for _, (u, v, w) in collabs.iterrows():
-    # generate instances
+    # generate instance
     u_row = cvs.loc[[u]]
     v_row = cvs.loc[[v]]
-    instance1 = np.squeeze(np.concatenate([u_row, v_row], axis=1))
-    instance2 = np.squeeze(np.concatenate([v_row, u_row], axis=1))
-    instances.append(instance1)
-    instances.append(instance2)
+    instance = np.squeeze(np.concatenate([u_row, v_row], axis=1))
+    instances.append(instance)
 
-    # generate corresponding labels
-    labels.append(w)
+    # generate corresponding label
     labels.append(w)
 
-    # add edge to edges list
-    edges.append((u, v))
-    edges.append((v, u))
-
-  # make queries fast to answer
-  edges = set(edges)
+    # add edge and its reverse to edges list
+    edges.add((u, v))
+    edges.add((v, u))
 
   # generate negative examples
   n_neg_examples = len(instances) // 2
   for _ in range(n_neg_examples):
-    # randomly choose non edge
+    # randomly choose non-edge
     while True:
       # pick two random endpoints
       u, v = np.random.choice(len(cvs), 2, replace=False)
@@ -47,24 +64,31 @@ def create_dataset(cvs, collabs, test_size):
         # generate negative instance
         u_row = cvs.loc[[u_index]]
         v_row = cvs.loc[[v_index]]
-        instance1 = np.squeeze(np.concatenate([u_row, v_row], axis=1))
-        instance2 = np.squeeze(np.concatenate([v_row, u_row], axis=1))
-        instances.append(instance1)
-        instances.append(instance2)
+        instance = np.squeeze(np.concatenate([u_row, v_row], axis=1))
+        instances.append(instance)
 
-        # generate corresponding labels
-        labels.append(0)
+        # generate corresponding label
         labels.append(0)
 
         # add non-edge to edges
-        edges.append((u_row, v_row))
-        edges.append((v_row, u_row))
+        edges.add((u_index, v_index))
+        edges.add((v_index, u_index))
 
         break
 
+  # generate binary labels for stratification
+  binary_labels = np.array(labels)
+  binary_labels = np.array(binary_labels != 0, dtype=np.uint8)
+
   # split dataset into train/test
   instances_train, instances_test, labels_train, labels_test = train_test_split(
-      instances, labels, test_size=test_size, stratify=labels)
+      instances, labels, test_size=test_size, stratify=binary_labels)
+
+  # add reverse instances to datasets
+  instances_train, labels_train = add_reverse_instances(
+      instances_train, labels_train, n_features)
+  instances_test, labels_test = add_reverse_instances(instances_test,
+                                                      labels_test, n_features)
 
   return (instances_train, labels_train), (instances_test, labels_test)
 
