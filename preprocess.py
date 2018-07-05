@@ -225,6 +225,9 @@ def main():
   collab = pd.DataFrame(edges)
   print('Done.')
 
+  # drop collaborations from preprocessed
+  data = data.drop(labels='Colaboracoes', axis=1)
+
   # save processed data
   print('Saving results...')
   data_path = os.path.join(FLAGS.results_path, 'preprocessed.csv')
