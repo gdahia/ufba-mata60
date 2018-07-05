@@ -89,3 +89,5 @@ optional arguments:
                         path to trained classifier model
   --binary              use this flag to perform binary classification
 ```
+
+O resultado esperado é a acurácia do método, que, quando rodado com os parâmetros acima, deve ser de `0.8689972453355295`.
