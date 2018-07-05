@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 FLAGS = None
@@ -71,7 +72,6 @@ def create_dataset(cvs, collabs, test_size):
 def main():
   import os
   import pickle
-  import pandas as pd
 
   # derandomize, if 'FLAGS.seed' is not None
   np.random.seed(FLAGS.seed)
