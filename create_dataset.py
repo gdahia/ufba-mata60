@@ -130,7 +130,7 @@ def main():
   print('Done')
 
   # save test dataset
-  print('Saving training dataset...')
+  print('Saving testing dataset...')
   test_path = os.path.join(FLAGS.save_path, 'test.pkl')
   with open(test_path, 'wb') as output:
     pickle.dump(test, output, -1)
