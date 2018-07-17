@@ -97,6 +97,12 @@ O conjunto de dados acima é dividido da seguinte maneira: são sorteados 60% de
 
 O resultado reportado acima é para o caso em que classificamos apenas se, dado o par de currículos pré-processados, há colaboração ou não entre eles. Chamamos essa situação de `binary`, ou classificação binária. Apresentamos também os resultados onde tentamos estimar, dados dois currículos, quantas colaborações já existem entre seus pesquisadores.
 
+Calculamos a acurácia como:
+
+<div align='center'>
+  <img src='accuracy.png' width='240px'>
+</div>
+
 A acurácia para `binary` é, usando `seed` 0, `~86.90%`. Para o outro caso, também usando `seed` 0, é de `0.7830062760912163` ou aproximadamente `78.30%`.
 
 Ressaltamos que esses resultados, são, na verdade, um limite inferior da performance do nosso métodos. Caso nosso algoritmo classifique que entre dois pesquisadores possa haver uma colaboração mas ela ainda não exista, não há garantias que isso, no futuro, não vá ocorrer.
