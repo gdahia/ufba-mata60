@@ -65,26 +65,39 @@ O restante desse relatório é dividido da seguinte forma: a seção \ref{sec:me
 \section{Metodologia}
 \label{sec:methods}
 
+% TODO: mencionar que fazemos para varias seeds
+
 Para sugerir colaborações entre os doutores da base, primeiramente foi feito um pré-processamento na base de dados.
 Este envolveu remover currículos com informações inconsistentes ou faltantes, agrupar as localizações e dados sobre a formação dos doutores, que são preenchidos livremente na Plataforma Lattes, utilizando técnicas de mineração de texto, e a remoção de atributos irrelevantes para a tarefa proposta.
+
+Com os dados pré-processados, dividimos-os em um conjunto de treino, compreendendo 60\% do total de dados, e um conjunto de teste, com o restante.
+Essa divisão é feita de maneira estratificada, quando consideramos apenas se há ou não colaboração entre os donos dos currículos.
 
 \subsection{Pré-processamento}
 \label{sec:preprocess}
 
+A base de dados \emph{LattesDoctoralDataset} contém informação relativa a 265.187 currículos, identificados unicamente por um identificador inteiro no intervalo \{1, 2 \dots 265.187\}.
+Seus dados estão divididos em seis arquivos de formato CSV, contendo informações sobre a atuação profissional de cada doutor, as colaborações relatadas entre doutores, informações dos doutores a partir da graduação até o pós-doutorado, sobre a produção científica de diversos tipos relatada por cada doutor, o nível de domínio em outras línguas dos doutores, e sobre as orientações realizadas ou andamento.
+Para mais detalhes sobre a organização da base, sua coleta e conteúdo, o leitor interessado é referenciado ao artigo original de sua publicação~\cite{lattes-dataset}.
+
 O primeiro passo do pré-processamento é o descarte de currículos que não tenham colaborações relatadas ou com informações faltantes.
-Nessa etapa, todo currículo com valores inválidos nos campos de atuação profissional, e, excetuando o campo ``\texttt{pos-doutorado}'', de formação acadêmica, são descartados.
-Além disso, currículos que não tenham produção científica também são descartados, por entedermos que é um pré-requisito ao título de doutor a alguma produção científica.
+Nessa etapa, todo currículo com valores inválidos nos campos de atuação profissional, e, excetuando o campo ``\texttt{pos-doutorado}'' e ``\texttt{especializacao}'', de formação acadêmica, são descartados.
+Além disso, currículos que não tenham produção científica também são descartados, por entedermos que é um pré-requisito ao título de doutor possuir produção científica.
 Campos cujos significados não estão claros na formatação da base, como a seção de proficiência em línguas e os últimos campos da formação acadêmica, também foram descartados.
 
 Os campos que podem ser especificados livremente no Currículo Lattes apresentam enorme variabilidade na maneira de especificar a mesma informação.
-Por exemplo, em local de graduação, usuários podem especificar ``USP'', ``Universidade de São Paulo'' e ``Univ. de SP'' para se referir a mesma instituição.
+Por exemplo, no campo referente ao local de graduação, usuários podem especificar ``USP'', ``Universidade de São Paulo'' e ``Univ. de SP'' para se referir a mesma instituição.
 
 Consideramos dois conjuntos de campos em que a variabilidade se sobressai.
-O primeiro dele, a que denominou-se \texttt{lugares}, consiste de todos os campos prefixados por ``\texttt{local}'' e o campo ``\texttt{Instituicao Atual}''.
+O primeiro deles, a que denominou-se \texttt{lugares}, consiste de todos os campos prefixados por ``\texttt{local}'' e o campo ``\texttt{Instituicao Atual}''.
 O segundo, chamado de \texttt{formacao}, contém ``\texttt{doutorado}'', ``\texttt{graduacao}'', ``\texttt{especializacao}'', ``\texttt{mestrado}'' e ``\texttt{pos-doutorado}''.
 
-Para mitigar os efeitos da variabilidade, utilizou-se \emph{Latent Semantic Analysis} (LSA) \cite{lsa}, considerando cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual, cada valor desses campos foi transformado em um vetor no espaço $\mathbb{R}^{100}$.
-Em seguida, foi aplicado o algoritmo \emph{k-Means} para classificar o conjunto de valores dos campos em 500, no caso de \texttt{formacao}, ou 3000 grupos, no caso de \texttt{lugares}.
+Para mitigar os efeitos dessa variabilidade, utilizou-se Análise Semântica Latente (abreviado em inglês como LSA)~\cite{lsa}.
+Para isso, considerou-se cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual.
+O resultado desse processo é que cada valor desses campos foi transformado em um vetor no espaço $\mathbb{R}^{100}$.
+Em seguida, foi aplicado o algoritmo \emph{k-Means}~\cite{k-means} para agrupar o conjunto de valores dos campos em 500 grupos, no caso de \texttt{formacao}, ou 3.000 grupos, no caso de \texttt{lugares}.
+No caso dos grupos de \texttt{lugares}, usamos um número de grupos superior ao número de instituições de ensino superior no Brasil, para abrigar outras instituições.
+De acordo com os últimos dados coletados, este número é de 2.364 instituições~\cite{censo-mec}.
 
 \begin{figure}
   \centering
@@ -94,19 +107,21 @@ Em seguida, foi aplicado o algoritmo \emph{k-Means} para classificar o conjunto 
 \end{figure}
 
 Depois de agrupados os atributos acima, calculamos a produtividade de cada doutor como a soma das produtividades de cada uma das suas colaborações e adicionamos essa informação a base como o atributo ``\texttt{Colaboracoes}''.
-Utilizando esse atributo como preditor da tarefa que visa-se resolver, calculamos, entre todo outro atributo $X$ da base de dados e $Y = \texttt{Colaboracoes}$ a informação mútua $I$:
+Utilizando esse atributo como preditor da tarefa que se deseja resolver, calculamos, entre todo outro atributo $X$ da base de dados e $Y = \texttt{Colaboracoes}$ a informação mútua $I$:
 
 \begin{equation}
   I(X; Y) = \sum_{y \in Y} \sum_{x \in X} p(x, y) \log \left( \frac{p(x, y)}{p(x)p(y)} \right),
 \end{equation}
 
 onde $p(x, y)$ é a probabilidade conjunta de $X$ e $Y$, e $p(x)$ e $p(y)$ são, respectivamente, as probabilidades marginais de $X$ e $Y$.
-Informalmente, $I(X; Y)$ mede quão independente $X$ é de $Y$ e vice-versa; isso permite quantificar dependências não-lineares entre as distribuições estudadas, diferentemente de outras métricas, como por exemplo correlação, onde apenas dependências lineares são quantificadas.
+$p(x)$, $p(y)$ e $p(x, y)$ são estimados, respectivamente, como as frequências empíricas de $x$ em $X$, $y$ em $Y$, e $(x, y)$ em $(X, Y)$.
 
-A figura \ref{fig:mutual-info} mostra a informação mútua entre os atributos e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
-Nessa etapa, todos os atributos $X$ tais que $I(X; Y) = 0$ foram descartados das análises subsequentes.
+Informalmente, $I(X; Y)$ quantifica quão independente as variáveis $X$ e $Y$ são; isso permite quantificar dependências lineares, como a métrica correlação é capaz de fazer, e não-lineares entre as distribuições estudadas.
 
-O resultado da etapa de pré-processamento foi uma versão da base de dados com 8.180 currículos restritos aos atributos não independentes de ``\texttt{Colaboracoes}'' e uma versão do Grafo de Colaboracões atualizada para refletir a base pré-processada, contendo 58.689 arestas.
+A figura~\ref{fig:mutual-info} mostra a informação mútua entre os atributos e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
+Nessa etapa, todos os atributos $X$ tais que $I(X; Y) = 0$, \emph{i.e.} os atributos $X$ e $Y$ são independentes, foram descartados do conjunto de dados.
+
+%O resultado da etapa de pré-processamento foi uma versão da base de dados com 8.180 currículos restritos aos atributos não independentes de ``\texttt{Colaboracoes}'' e uma versão do Grafo de Colaboracões atualizada para refletir a base pré-processada, contendo 58.689 arestas.
 
 \subsection{Modelo de mineração de dados}
 \label{sec:datamine}
