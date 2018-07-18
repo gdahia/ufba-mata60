@@ -46,48 +46,21 @@
 
 \section{Introdução}
 
-A Plataforma Lattes, mantida pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq), corresponde a integração de bases de dados de Currículos, de Grupos de Pesquisa e de Instituições, e pauta atividades de planejamento e gestão e a formulação de políticas públicas dos órgaos governamentais brasileiros \cite{lattes-cnpq}.
-Em especial, o Currículo Lattes foi criado pelo CNPq para centralizar, padronizar e disponibilizar, através da Plataforma Lattes, informações pessoais, profissionais e acadêmicas da comunidade científica brasileira \cite{sucupira}.
-Essas informações são fornecidas pelos próprios autores dos currículos \cite{sucupira} e oferece grande abrangência e confiabilidade, sendo hoje adotado pela maioria das instituições de fomento, universidades e instituições de pesquisa do Brasil \cite{lattes-cnpq}.
+A Plataforma Lattes, mantida pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq), corresponde a integração de bases de dados de Currículos, de Grupos de Pesquisa e de Instituições, e pauta atividades de planejamento e gestão e a formulação de políticas públicas dos órgaos governamentais brasileiros~\cite{lattes-cnpq}.
+Em especial, o Currículo Lattes foi criado pelo CNPq para centralizar, padronizar e disponibilizar, através da Plataforma Lattes, informações pessoais, profissionais e acadêmicas da comunidade científica brasileira~\cite{sucupira}.
+Essas informações são fornecidas pelos próprios autores dos currículos~\cite{sucupira} e oferecem grande abrangência e confiabilidade; o Lattes já é adotado pela maioria das instituições de fomento, universidades e instituições de pesquisa do Brasil~\cite{lattes-cnpq}.
 
-Apesar da riqueza e potencial dessa base de dados, o CNPq impõe restrições ao acesso dessas informações, limitando o seu estudo \cite{lattes-dataset}.
-Com intuito de disseminar o conteúdo da Plataforma Lattes, foi publicado o conjunto de dados \emph{LattesDoctoralDataset} \cite{lattes-dataset}.
+Apesar da riqueza e potencial dessa base de dados, o CNPq impõe restrições ao acesso dessas informações, limitando o seu estudo~\cite{lattes-dataset}.
+Com intuito de disseminar o conteúdo da Plataforma Lattes, foi publicado o conjunto de dados \emph{LattesDoctoralDataset}~\cite{lattes-dataset}.
 Esta base contém dados a respeito do número e do tipo de publicações feitas, das colaborações entre pesquisadores, da atuação profissional e da formação acadêmica dos 265.187 doutores que possuem currículo publicado na plataforma, formatados em arquivos de formato \textit{comma separated values} (CSV).
 
-O foco desse trabalho, portanto, é realizar uma análise das colaborações relatadas pelos doutores no conjunto da \emph{LattesDoctoralDataset}, com um enfoque na possibilidade de sugerir ou prever novas colaborações com base nas informações fornecidas e nas colaborações preexistentes.
-Para isso, foram utilizadas técnicas de mineração de texto para pré-processamento da base e técnicas de mineração de dados para a obtenção de novas possíveis colaborações.
+Ao analisar as colaborações entre doutores nesse banco de dados, é possível perceber que seu número é de aproximadamente 0,02\% do total possível.
+Assim, o foco desse trabalho é, analisando o \emph{LattesDoctoralDataset}, desenvolver um método de mineração de dados para sugerir ou prever novas colaborações com base nas informações fornecidas e nas colaborações preexistentes, com o intuito de fomentar colaborações entre pesquisadores e, por consequência, o avanço da ciência no Brasil.
 
-O restante desse relatório é dividido da seguinte forma: a seção \ref{sec:dataset} entra em mais detalhes sobre a composição do conjunto de dados utilizados, a seção \ref{sec:methods} detalha a metodologia empregada, incluindo pré-processamento, divisão da base e experimentos, a seção \ref{sec:results} apresenta os resultados e sua discussão, e a seção \ref{sec:conclusion} apresenta as conclusões do trabalho.
+Usando Florestas Aleatórias~\cite{random-forests}, o método proposto atinge acurácia de $86,70~\pm~0,18$\%, com 99\% de confiança, quando a tarefa é: dado um par de currículos, determinar se há pelo menos uma colaboração entre esses pesquisadores.
+Quando a tarefa é estimar o número de colaborações entre um par de pesquisadores, dados os seus currículos, o método consegue acurácia de $78,34~\pm~0,16$\%, com 99\% de confiança.
 
-\section{Análise de \emph{LattesDoctoralDataset}}
-\label{sec:dataset}
-
-A base de dados \emph{LattesDoctoralDataset} contém informação relativa a 265.187 currículos, identificados unicamente por um identificador inteiro no intervalo \{1, 2 \dots 265.187\}.
-Seus dados estão divididos em seis arquivos de formato CSV: \textit{Atuacao\_Profissional.csv}, contendo informações sobre a atuação profissional de cada doutor, como instituição atual, área de atuação e titulação máxima, \textit{Colaboracoes.csv}, contendo as colaborações relatadas entre doutores, \textit{Formacao\_Academica.csv}, contendo informações dos doutores a partir da graduação até o pós-doutorado, \textit{Producao\_Cientifica.csv}, com dados sobre a produção científica de diversos tipos relatada por cada doutor, \textit{Proficiencia.csv}, descrevendo o nível de domínio em outras línguas dos doutores,  e \textit{Orientacoes.csv}, contendo dados sobre as orientações realizadas ou andamento.
-Para mais detalhes sobre a organização da base, sua coleta e conteúdo, o leitor interessado é referenciado ao artigo original de sua publicação \cite{lattes-dataset}.
-
-Como o interesse desse trabalho está nas colaborações relatadas entre os doutores, a análise do conjunto de dados será mais aprofundada nesse quesito.
-As colaborações são dadas através de um grafo simples, não direcionado - ao qual chamamos \textit{Grafo de Colaborações} - no qual os currículos são vértices e existe uma aresta de peso $w$ entre dois vértices $u$ e $v$ se os currículos de $u$ e $v$ relatam $w$ colaborações entre si.
-
-Uma contagem simples, considerando que existem 265.187 vértices no Grafo de Colaborações, revela que se trata de um grafo esparso: existem apenas 6.902.042 arestas, quando o total possível era de $\frac{265187 \times (265187 - 1)}{2} =$ 35.161.939.891 colaborações.
-Isso significa que menos de 0,02\% das possíveis colaborações entre doutores ocorreu, fundamentando o objetivo desse trabalho de sugerir novas colaborações entre doutores.
-
-Esses dados informam também que o número médio de colaboradores (medido como o grau médio do Grafo de Colaborações) é de aproximadamente 13 por doutor, mas que, quando consideramos os 185.451 (aproximadamente 70\% do total) doutores que relataram alguma colaboração, sobe para aproximadamente 37 por doutor.
-
-Também foram calculados o número médio de colaborações por doutor e seu desvio padrão, 93 e 356, aproximada e respectivamente, essas mesmas quantias restritas a doutores que relataram colaborações em seus currículos, respectivamente em torno de 134 e 420, e o número médio aproximado de colaborações entre colaboradores e seu desvio padrão, 2 e 4 respectivamente.
-Isso revela que, apesar de a maioria dos doutores colaborarem e terem diversos colaboradores, essas colaborações são pouco produtivas.
-
-\begin{figure}
-\centering
-  \includegraphics[width=0.45\textwidth]{graphs/degree_histogram.pdf}
-  \includegraphics[width=0.45\textwidth]{graphs/weight_histogram.pdf}
-  \caption{Histogramas de colaboracao por todos os currículos, à esquerda, e de produtividade por colaboração, à direita. Detalhe para o eixo vertical, em escala logaritmica.}
-  \label{fig:collabs}
-\end{figure}
-
-Foram analisados também a frequência de colaboração para todos os doutores e a produtividade dessas colaborações, medida em termos de trabalhos resultantes da colaboração.
-A figura \ref{fig:collabs} apresenta os histogramas resultantes dessa análise.
-Desses histogramas, pode-se perceber que mesmo entre aqueles que já colaboram, prevalecem colaborações breves, com pequena produtividade, fortalecendo o argumento para a realização deste trabalho.
+O restante desse relatório é dividido da seguinte forma: a seção \ref{sec:methods} detalha a metodologia empregada, incluindo pré-processamento, divisão da base e experimentos, a seção \ref{sec:results} apresenta os resultados e sua discussão, e a seção \ref{sec:conclusion} apresenta as conclusões do trabalho.
 
 \section{Metodologia}
 \label{sec:methods}
