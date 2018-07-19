@@ -61,21 +61,19 @@ Assim, o foco desse trabalho é, analisando o \emph{LattesDoctoralDataset}, dese
 Usando Florestas Aleatórias~\cite{random-forests}, o método proposto atinge acurácia de $86,70\%~\pm~0,18$, com 99\% de confiança, quando a tarefa é: dado um par de currículos, determinar se há pelo menos uma colaboração entre esses pesquisadores.
 Quando a tarefa é estimar o número de colaborações entre um par de pesquisadores, dados os seus currículos, o método consegue acurácia de $78,34\%~\pm~0,16$, com 99\% de confiança.
 
-O restante desse relatório é dividido da seguinte forma: a seção \ref{sec:methods} detalha a metodologia empregada, incluindo pré-processamento, divisão da base e experimentos, a seção \ref{sec:experiments} apresenta os experimentos, resultados e sua discussão, e a seção \ref{sec:conclusion} apresenta as conclusões do trabalho.
-
 \section{Metodologia}
 \label{sec:methods}
 
 Para sugerir colaborações entre os doutores da base, primeiramente foi feito um pré-processamento na base de dados.
 Este envolveu remover currículos com informações inconsistentes ou faltantes, agrupar as localizações e dados sobre a formação dos doutores, que são preenchidos livremente na Plataforma Lattes, utilizando técnicas de mineração de texto, e a remoção de atributos irrelevantes para a tarefa proposta.
 
-% TODO: summarize random forests
+Com a base pré-processada, o modelo empregado foi de Florestas Aleatórias, um conjunto de Árvores de Decisão treinado em diferentes partes da base de treino.
 
 \subsection{Pré-processamento}
 \label{sec:preprocess}
 
 A base de dados \emph{LattesDoctoralDataset} contém informação relativa a 265.187 currículos, identificados unicamente por um identificador inteiro no intervalo $\{1, 2, ..., 265.187\}$.
-Seus dados estão divididos em seis arquivos de formato CSV, contendo informações sobre a atuação profissional de cada doutor, as colaborações relatadas entre doutores, informações dos doutores a partir da graduação até o pós-doutorado, sobre a produção científica de diversos tipos relatada por cada doutor, o nível de domínio em outras línguas dos doutores, e sobre as orientações realizadas ou andamento.
+Ela contém informações sobre a atuação profissional, colaborações relatadas, produção científica, entre outros.
 Para mais detalhes sobre a organização da base, sua coleta e conteúdo, o leitor interessado é referenciado ao artigo original de sua publicação~\cite{lattes-dataset}.
 
 O primeiro passo do pré-processamento é o descarte de currículos que não tenham colaborações relatadas ou com informações faltantes.
@@ -115,7 +113,7 @@ $p(x)$, $p(y)$ e $p(x, y)$ são estimados, respectivamente, como as frequências
 
 Informalmente, $I(X, Y)$ quantifica quão independente as variáveis $X$ e $Y$ são; isso permite quantificar dependências lineares, como a métrica correlação é capaz de fazer, e não-lineares entre as distribuições estudadas.
 
-A figura~\ref{fig:mutual-info} mostra a informação mútua entre os atributos e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
+A figura~\ref{fig:mutual-info} mostra a informação mútua entre e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
 Nessa etapa, todos os atributos $X$ tais que $I(X, Y) = 0$, \emph{i.e.} os atributos $X$ e $Y$ são independentes, foram descartados do conjunto de dados.
 
 O resultado da etapa de pré-processamento foi uma versão da base de dados em que, em uma determinada execução, restaram 8.180 currículos restritos aos atributos não independentes de ``\texttt{Colaboracoes}''.
@@ -200,7 +198,16 @@ Além disso, os arquivos dos modelos têm tamanho razoável: aqueles para a moda
 \section{Conclusão}
 \label{sec:conclusion}
 
-% TODO: discuss limitations as future improvements
+Esse trabalho apresentou um modelo de mineração de dados baseado em Florestas Aleatórias capaz de prever colaborações entre doutores da base \emph{LattesDoctoralDataset}.
+Além de estabelecer resultados iniciais para esse base, a acurácia obtida mostra que esse sistema é preciso o suficiente para ser utilizado na prática, sem problemas com tempo de execução ou requisito de armazenamento.
+
+Foram identificadas, contudo, limitações da metodologia proposta que podem ser melhoradas em versões futuras.
+O tratamento de dados faltantes ou fora de conformação pode ser melhorado já que atualmente consiste em eliminar instâncias com erros detectáveis e mineração de texto elementar para os campos de preenchimento livre.
+
+A abordagem de mineração de textos empregada, inclusive, não generaliza caso haja termos não presentes no conjunto de dados analisado - também imagina-se que um método de mineração de textos mais robusto que LSA possa melhorar os resultados.
+
+Melhores resultados também devem poder ser obtidos integrando o processo de colheita de uma nova versão da base de dados com as demandas do modelo de aprendizado de máquina.
+Como mencionado anteriormente, maior padronização das informações e a informação temporal das colaborações pode melhorar a performance da metodologia proposta.
 
 \bibliographystyle{sbc}
 \bibliography{refs}
