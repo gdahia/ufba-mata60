@@ -128,7 +128,7 @@ Para fazer inferência com esse modelo, são computadas as classes previstas por
 A predição final é obtida através do cálculo ou da média ou da moda das previsões individuais.
 
 Esse modelo pode equivalentemente ser explicado como uso de \emph{bagging} para Árvores de Decisão.
-Suas vantagens, conhecidas na literatura, são regularizar o modelo, diminuindo sobreajuste e aumentando a acurácia~\cite{random-forests}.
+Suas vantagens: são regularizar o modelo, diminuindo sobreajuste e aumentando a acurácia~\cite{random-forests}.
 
 Nesse trabalho, utilizou-se a implementação da biblioteca \emph{Scikit-learn}~\cite{sklearn} de Florestas Aleatórias, e limitou-se o número de árvores à 10; os outros parâmetros são mantidos os padrões especificados pela biblioteca.
 
@@ -154,11 +154,11 @@ A figura~\ref{fig:modalities} ilustra ambas modalidades.
   \label{fig:modalities}
 \end{figure}
 
-Na modalidade \texttt{binary}, a tarefa consiste em determinar, dado um par de currículos de doutores, se há pelo menos uma colaboração entre eles.
+Na modalidade \texttt{binary}, a tarefa consiste em determinar, dado um par de currículos, se há pelo menos uma colaboração entre eles.
 Aqui, a Floresta Aleatória é treinada com pares de currículos como atributos e a informação de se há ou não colaboração entre eles como saída esperada.
-Para fazer com que o modelo treinado seja invariante à ordem em que os currículos são colocados no par, duplicou-se o conjunto de treino, colocando currículos nos dois sentidos.
+Para fazer com que o modelo treinado seja robusto à ordem em que os currículos são colocados no par, duplicou-se o conjunto de treino, colocando currículos nos dois sentidos.
 
-Já na modalidade \texttt{standard}, a tarefa consiste em estimar, dado um par de currículos de doutores, o número de colaborações que existem entre eles.
+Já na modalidade \texttt{standard}, a tarefa consiste em estimar, dado um par de currículos, o número de colaborações entre eles.
 Neste caso, o modelo é treinado com os pares de currículos e sua saída é uma classe de $\{0, 1, ..., M\}$, onde $M$ é o maior número de colaborações presente no conjunto de testes.
 
 A validação do método usa a métrica acurácia, calculada como
@@ -166,7 +166,7 @@ A validação do método usa a métrica acurácia, calculada como
   \textit{acurácia} = \frac{\text{Previsões corretas}}{\text{Total de previsões}}.
 \end{equation}
 
-Assim como é feito para o conjunto de treino, pares de currículos são também colocados nos dois sentidos.
+Assim como é feito para o conjunto de treino, pares de currículos são também colocados nos dois sentidos no conjunto de teste.
 Isso permite avaliar a robustez do método proposto à ordem em que os currículos são entregues ao modelo de mineração de dados sem artificialmente melhorar o resultado no conjunto de testes.
 
 \subsection{Resultados}
@@ -193,7 +193,7 @@ Além disso, os arquivos dos modelos têm tamanho razoável: aqueles para a moda
 \label{sec:conclusion}
 
 Esse trabalho apresentou um modelo de mineração de dados baseado em Florestas Aleatórias capaz de prever colaborações entre doutores da base \emph{LattesDoctoralDataset}.
-Além de estabelecer resultados iniciais para esse base, a acurácia obtida mostra que esse sistema é preciso o suficiente para ser utilizado na prática, sem problemas com tempo de execução ou requisito de armazenamento.
+Além de estabelecer resultados iniciais para essa base, a acurácia obtida mostra que esse sistema é preciso o suficiente para ser utilizado na prática, sem problemas com tempo de execução ou requisito de armazenamento.
 
 Foram identificadas, contudo, limitações da metodologia proposta que podem ser melhoradas em versões futuras.
 O tratamento de dados faltantes ou fora de conformação pode ser melhorado já que atualmente consiste em eliminar instâncias com erros detectáveis e mineração de texto elementar para os campos de preenchimento livre.
