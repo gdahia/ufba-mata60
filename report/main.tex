@@ -73,7 +73,7 @@ Com a base pré-processada, o modelo empregado foi de Florestas Aleatórias, um 
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.5\textwidth]{graphs/mutual_information.pdf}
+  \includegraphics[width=0.45\textwidth]{graphs/mutual_information.pdf}
   \vspace{-15pt}
   \caption{Informação mútua de cada atributo com o atributo Colaborações para uma execução do método.}
   \label{fig:mutual-info}
@@ -97,7 +97,7 @@ O segundo, chamado de \texttt{formacao}, contém ``\texttt{doutorado}'', ``\text
 Para mitigar os efeitos dessa variabilidade, utilizou-se Análise Semântica Latente (LSA)~\cite{lsa}.
 Para isso, considerou-se cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual.
 O resultado desse processo é a transformação dos valores desses campos em um vetores no espaço $\mathbb{R}^{100}$.
-Em seguida, foi aplicado o algoritmo \emph{k-Means}~\cite{k-means} para agrupar o conjunto de valores dos campos em 500 grupos, no caso de \texttt{formacao}, ou 3.000 grupos, no caso de \texttt{lugares}.
+Em seguida, foi aplicado o algoritmo \emph{k-Means} para agrupar o conjunto de valores dos campos em 500 grupos, no caso de \texttt{formacao}, ou 3.000 grupos, no caso de \texttt{lugares}.
 Este número foi calculado para comportar todas instituições de ensino superior no Brasil - 2.364, de acordo com~\cite{censo-mec} - e outras.
 
 Depois desse agrupamento, calculou-se a produtividade de cada doutor como o total de colaborações relatadas; esse campo foi denominado ``\texttt{Colaboracoes}''.
@@ -130,7 +130,7 @@ A predição final é obtida através do cálculo ou da média ou da moda das pr
 Esse modelo pode equivalentemente ser explicado como uso de \emph{bagging} para Árvores de Decisão.
 Suas vantagens: são regularizar o modelo, diminuindo sobreajuste e aumentando a acurácia~\cite{random-forests}.
 
-Nesse trabalho, utilizou-se a implementação da biblioteca \emph{Scikit-learn}~\cite{sklearn} de Florestas Aleatórias, e limitou-se o número de árvores à 10; os outros parâmetros são mantidos os padrões especificados pela biblioteca.
+%Nesse trabalho, utilizou-se a implementação da biblioteca \emph{Scikit-learn}~\cite{sklearn} de Florestas Aleatórias, e limitou-se o número de árvores à 10; os outros parâmetros são mantidos os padrões especificados pela biblioteca.
 
 \section{Experimentos}
 \label{sec:experiments}
@@ -175,15 +175,15 @@ A partir das dez repetições do experimento, obteve-se $86,70\%~\pm~0,18$ de ac
 
 Quando se compara estes resultados com a performance esperada de um classificador aleatório para essa mesma tarefa - dado que esta tarefa não foi tentada anteriormente e, portanto, não há estado-da-arte -, respectivamente 50\% para a modalidade \texttt{binary}, e 1,08\% (em média, existem 92 valores de colaborações possíveis) para a modalidade \texttt{standard}.
 
-É importante notar que o resultado apresentado, na verdade, se trata de um limite inferior para a performance do modelo no conjunto de teste.
-Isso ocorre porque, se para um determinado par de currículos para o qual foi previsto colaborações, não há colaboração relatada entre seus detentores, há três cenários possíveis: (1) realmente não há e nem nunca haverá colaboração entre esses pesquisadores e o modelo realmente fez uma classificação equivocada; (2) os doutores ainda não colaboraram, mas no futuro podem vir a colaborar; ou (3) há um erro no banco de dados e os doutores colaboraram, mas não relataram sua colaboração.
-Nos cenários (2) e (3), a acurácia calculada do modelo é inferior ao valor correto.
-Em especial, para o cenário (2), o \emph{LattesDoctoralDataset} não possui informação temporal e o modelo, portanto, não pode aprender esse tipo de informação.
+%É importante notar que o resultado apresentado, na verdade, se trata de um limite inferior para a performance do modelo no conjunto de teste.
+%Isso ocorre porque, se para um determinado par de currículos para o qual foi previsto colaborações, não há colaboração relatada entre seus detentores, há três cenários possíveis: (1) realmente não há e nem nunca haverá colaboração entre esses pesquisadores e o modelo realmente fez uma classificação equivocada; (2) os doutores ainda não colaboraram, mas no futuro podem vir a colaborar; ou (3) há um erro no banco de dados e os doutores colaboraram, mas não relataram sua colaboração.
+%Nos cenários (2) e (3), a acurácia calculada do modelo é inferior ao valor correto.
+%Em especial, para o cenário (2), o \emph{LattesDoctoralDataset} não possui informação temporal e o modelo, portanto, não pode aprender esse tipo de informação.
 
-Também é importante notar que a discrepância nos resultados entre as modalidades pode ser explicada pelo fato de a tarefa proposta para \texttt{standard} ser consideravelmente mais difícil do que a de \texttt{binary}: em um caso extremo, é possível que um dado número de colaborações não apareça no treino e todas as instãncias dessa classe seriam mal-classificadas.
-Além do mais, a avaliação proposta não considera a proximidade do número de colaborações previsto do real; apenas previsões corretas são consideradas na métrica.
+Também é importante notar que a discrepância nos resultados entre as modalidades pode ser explicada pelo fato de a tarefa proposta para \texttt{standard} ser consideravelmente mais difícil do que a de \texttt{binary}: é possível que um dado número de colaborações não apareça no treino e todas as instãncias dessa classe seriam mal-classificadas.
+Além do mais, a avaliação proposta não considera a proximidade do número de colaborações previsto do real; apenas previsões corretas são consideradas.
 
-Apesar do grande número de nós em cada árvore (nos experimentos realizados, este número ficou na ordem de 10 mil), é possível realizar inferência no modelo, uma vez carregado em memória principal, em tempo real.
+Apesar do grande número de nós em cada árvore (aproximadamente 20 mil), é possível realizar inferência no modelo, uma vez carregado em memória principal, em tempo real.
 Isso ocorre porque a altura é, no máximo, o número de atributos fornecidos ao modelo, que não passa de 100. % em media, sao 96 atributos
 Além disso, os arquivos dos modelos têm tamanho razoável: aqueles para a modalidade \texttt{binary} têm em torno de 15MB, e os \texttt{standard} têm em torno de 250MB.
 
@@ -196,13 +196,14 @@ Esse trabalho apresentou um modelo de mineração de dados baseado em Florestas 
 Além de estabelecer resultados iniciais para essa base, a acurácia obtida mostra que esse sistema é preciso o suficiente para ser utilizado na prática, sem problemas com tempo de execução ou requisito de armazenamento.
 
 Foram identificadas, contudo, limitações da metodologia proposta que podem ser melhoradas em versões futuras.
-O tratamento de dados faltantes ou fora de conformação pode ser melhorado já que atualmente consiste em eliminar instâncias com erros detectáveis e mineração de texto elementar para os campos de preenchimento livre.
+O tratamento de dados faltantes ou fora de conformação pode ser melhorado já que atualmente consiste em eliminar instâncias com erros detectáveis e mineração de texto para os campos de preenchimento livre.
 
 A abordagem de mineração de textos empregada, inclusive, não generaliza caso haja termos não presentes no conjunto de dados analisado - também imagina-se que um método de mineração de textos mais robusto que LSA possa melhorar os resultados.
 
 Melhores resultados também devem poder ser obtidos integrando o processo de colheita de uma nova versão da base de dados com as demandas do modelo de aprendizado de máquina.
-Como mencionado anteriormente, maior padronização das informações e a informação temporal das colaborações pode melhorar a performance da metodologia proposta.
+Como mencionado anteriormente, maior padronização das informações e a informação temporal das colaborações pode melhorar a performance da metodologia.
 
+\vspace{-5pt}
 \bibliographystyle{sbc}
 \bibliography{refs}
 
