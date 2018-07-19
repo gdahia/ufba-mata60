@@ -47,7 +47,7 @@
 
 \section{Introdução}
 
-A Plataforma Lattes, mantida pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq), corresponde a integração de bases de dados de Currículos, de Grupos de Pesquisa e de Instituições. Ela pauta atividades de planejamento e gestão, e a formulação de políticas públicas dos órgaos governamentais brasileiros~\cite{lattes-cnpq}.
+A Plataforma Lattes, mantida pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq), corresponde à integração de bases de dados de Currículos, de Grupos de Pesquisa e de Instituições. Ela pauta atividades de planejamento e gestão, e a formulação de políticas públicas dos órgaos governamentais brasileiros~\cite{lattes-cnpq}.
 Em especial, o Currículo Lattes foi criado pelo CNPq para centralizar, padronizar e disponibilizar, através da Plataforma Lattes, informações pessoais, profissionais e acadêmicas, fornecidas pelos próprios autores dos currículos, da comunidade científica brasileira~\cite{sucupira}.
 
 Apesar da riqueza e potencial dessa base de dados, o CNPq impõe restrições ao acesso dessas informações, limitando o seu estudo.
@@ -64,21 +64,28 @@ Quando a tarefa é estimar o número de colaborações entre um par de pesquisad
 \label{sec:methods}
 
 Para sugerir colaborações entre os doutores da base, primeiramente foi feito um pré-processamento na base de dados.
-Este envolveu remover currículos com informações inconsistentes ou faltantes, agrupar as localizações e dados sobre a formação dos doutores, que são preenchidos livremente na Plataforma Lattes, utilizando técnicas de mineração de texto, e a remoção de atributos irrelevantes para a tarefa proposta.
+Este envolveu remover currículos com informações inconsistentes ou faltantes, agrupar as localizações e dados sobre a formação dos doutores, campos de preenchimento livre na Plataforma Lattes, utilizando técnicas de mineração de texto, e a remoção de atributos irrelevantes para a tarefa proposta.
 
-Com a base pré-processada, o modelo empregado foi de Florestas Aleatórias, um conjunto de Árvores de Decisão treinado em diferentes partes da base de treino.
+Com a base pré-processada, o modelo empregado foi de Florestas Aleatórias, um conjunto de Árvores de Decisão treinado com diferentes partes da base de treino.
 
 \subsection{Pré-processamento}
 \label{sec:preprocess}
 
-A base de dados \emph{LattesDoctoralDataset} contém informação relativa a 265.187 currículos, identificados unicamente por um identificador inteiro no intervalo $\{1, 2, ..., 265.187\}$.
-Ela contém informações sobre a atuação profissional, colaborações relatadas, produção científica, entre outros.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{graphs/mutual_information.pdf}
+  \vspace{-15pt}
+  \caption{Informação mútua de cada atributo com o atributo Colaborações para uma execução do método.}
+  \label{fig:mutual-info}
+\end{figure}
+
+A base de dados \emph{LattesDoctoralDataset} contém 265.187 currículos, com informações sobre a atuação profissional, colaborações relatadas, produção científica, entre outros.
 Para mais detalhes sobre a organização da base, sua coleta e conteúdo, o leitor interessado é referenciado ao artigo original de sua publicação~\cite{lattes-dataset}.
 
 O primeiro passo do pré-processamento é o descarte de currículos que não tenham colaborações relatadas ou com informações faltantes.
 Nessa etapa, todo currículo com valores inválidos nos campos de atuação profissional, e, excetuando o campo ``\texttt{pos-doutorado}'' e ``\texttt{especializacao}'', de formação acadêmica, são descartados.
-Além disso, currículos que não tenham produção científica também são descartados, seguindo o entendimento que é um pré-requisito ao título de doutor possuir produção científica.
-Campos cujos significados não estão claros na formatação da base, como a seção de proficiência em línguas e os últimos campos da formação acadêmica, também foram descartados.
+Além disso, currículos que não tenham produção científica também são descartados, considerando que isto é um pré-requisito ao título de doutor.
+Campos cujos significados não estão claros na especificação da base, como os de proficiência em línguas e os últimos campos da formação acadêmica, também foram descartados.
 
 Os campos que podem ser especificados livremente no Currículo Lattes apresentam enorme variabilidade na maneira de especificar a mesma informação.
 Por exemplo, no campo referente ao local de graduação, usuários podem especificar ``USP'', ``Universidade de São Paulo'' e ``Univ. de SP'' para se referir a mesma instituição.
@@ -87,66 +94,53 @@ Em dois conjuntos de campos a variabilidade se sobressai.
 O primeiro deles, a que denominou-se \texttt{lugares}, consiste de todos os campos prefixados por ``\texttt{local}'' e o campo ``\texttt{Instituicao Atual}''.
 O segundo, chamado de \texttt{formacao}, contém ``\texttt{doutorado}'', ``\texttt{graduacao}'', ``\texttt{especializacao}'', ``\texttt{mestrado}'' e ``\texttt{pos-doutorado}''.
 
-Para mitigar os efeitos dessa variabilidade, utilizou-se Análise Semântica Latente (abreviado em inglês como LSA)~\cite{lsa}.
+Para mitigar os efeitos dessa variabilidade, utilizou-se Análise Semântica Latente (LSA)~\cite{lsa}.
 Para isso, considerou-se cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual.
-O resultado desse processo é que cada valor desses campos foi transformado em um vetor no espaço $\mathbb{R}^{100}$.
+O resultado desse processo é a transformação dos valores desses campos em um vetores no espaço $\mathbb{R}^{100}$.
 Em seguida, foi aplicado o algoritmo \emph{k-Means}~\cite{k-means} para agrupar o conjunto de valores dos campos em 500 grupos, no caso de \texttt{formacao}, ou 3.000 grupos, no caso de \texttt{lugares}.
-No caso dos grupos de \texttt{lugares}, usamos um número de grupos superior ao número de instituições de ensino superior no Brasil, para abrigar outras instituições.
-De acordo com os últimos dados coletados, este número é de 2.364 instituições~\cite{censo-mec}.
+Este número foi calculado para comportar todas instituições de ensino superior no Brasil - 2.364, de acordo com~\cite{censo-mec} - e outras.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.5\textwidth]{graphs/mutual_information.pdf}
-  \vspace{-15pt}
-  \caption{Informação mútua de cada atributo com o atributo Colaborações para uma execução do método}
-  \label{fig:mutual-info}
-\end{figure}
-
-Depois de agrupados os atributos acima, calculamos a produtividade de cada doutor como a soma das produtividades de cada uma das suas colaborações e adicionamos essa informação a base como o atributo ``\texttt{Colaboracoes}''.
-Utilizando esse atributo como preditor da tarefa que se deseja resolver, calculamos, entre todo outro atributo $X$ da base de dados e $Y = \texttt{Colaboracoes}$ a informação mútua $I$:
+Depois desse agrupamento, calculou-se a produtividade de cada doutor como o total de colaborações relatadas; esse campo foi denominado ``\texttt{Colaboracoes}''.
+Utilizando esse atributo como preditor da tarefa que se deseja resolver, calculou-se, entre todo outro atributo $X$ da base de dados e $Y = \texttt{Colaboracoes}$ a informação mútua $I$:
 \begin{equation}
   I(X, Y) = \sum_{y \in Y} \sum_{x \in X} p(x, y) \log \left( \frac{p(x, y)}{p(x)p(y)} \right),
 \end{equation}
 onde $p(x, y)$ é a probabilidade conjunta de $X$ e $Y$, e $p(x)$ e $p(y)$ são, respectivamente, as probabilidades marginais de $X$ e $Y$.
 $p(x)$, $p(y)$ e $p(x, y)$ são estimados, respectivamente, como as frequências empíricas de $x$ em $X$, $y$ em $Y$, e $(x, y)$ em $(X, Y)$.
 
-Informalmente, $I(X, Y)$ quantifica quão independente as variáveis $X$ e $Y$ são; isso permite quantificar dependências lineares, como a métrica correlação é capaz de fazer, e não-lineares entre as distribuições estudadas.
+Informalmente, $I(X, Y)$ quantifica quão independente as variáveis $X$ e $Y$ são; isso permite quantificar dependências lineares, como correlação é capaz de fazer, e não-lineares entre as distribuições estudadas.
+A figura~\ref{fig:mutual-info} mostra os resultados.
 
-A figura~\ref{fig:mutual-info} mostra a informação mútua entre e ``\texttt{Colaboracoes}'' e os outros atributos considerados.
-Nessa etapa, todos os atributos $X$ tais que $I(X, Y) = 0$, \emph{i.e.} os atributos $X$ e $Y$ são independentes, foram descartados do conjunto de dados.
-
-O resultado da etapa de pré-processamento foi uma versão da base de dados em que, em uma determinada execução, restaram 8.180 currículos restritos aos atributos não independentes de ``\texttt{Colaboracoes}''.
-Nesta versão da base, existem apenas 58.689 colaborações entre pesquisadores, em contraste com as 6.902.042 colaborações da base original.
+Nessa etapa, todos os atributos independentes com ``\texttt{Colaboracoes}'' foram descartados do conjunto de dados.
+O resultado foi uma versão da base de dados em que, em uma determinada execução, restaram 8.180 currículos restritos aos atributos não independentes de ``\texttt{Colaboracoes}''.
+Nesta versão da base, existem 58.689 colaborações entre pesquisadores, em contraste com as 6.902.042 colaborações da base original.
 
 % TODO: add figure illustrating the preprocessing pipeline
 
 \subsection{Modelo de mineração de dados}
 \label{sec:datamining}
 
-Como os dados, tanto os atributos, quanto a saída, para o problema proposto são discretos, uma abordagem de mineração de dados adequada consiste na utilização de Florestas Aleatórias~\cite{random-forests}.
-
 O método de Florestas Aleatórias pode ser descrito da seguinte maneira: são construídos $N$ conjuntos de dados de tamanho igual ao da base original, através do sorteio com repetição dos exemplos do conjunto de dados inicial.
 Em cada uma dessas novas bases, é treinada uma Árvore de Decisão.
 O conjunto de todas essas árvores é o modelo de mineração de dados.
 
-Para fazer inferência com esse modelo, são computadas as classes previstas por cada uma das árvores da floresta.
-A predição do modelo final é feita através do cálculo ou da média ou da moda das previsões individuais.
+Para fazer inferência com esse modelo, são computadas as classes previstas por cada uma das árvores.
+A predição final é obtida através do cálculo ou da média ou da moda das previsões individuais.
 
 Esse modelo pode equivalentemente ser explicado como uso de \emph{bagging} para Árvores de Decisão.
 Suas vantagens, conhecidas na literatura, são regularizar o modelo, diminuindo sobreajuste e aumentando a acurácia~\cite{random-forests}.
 
-Nesse trabalho, utilizamos a implementação da biblioteca \emph{Scikit-learn}~\cite{sklearn} de Florestas Aleatórias, e limitamos o número de árvores à 10; os outros parâmetros são mantidos os padrões especificados pela biblioteca.
+Nesse trabalho, utilizou-se a implementação da biblioteca \emph{Scikit-learn}~\cite{sklearn} de Florestas Aleatórias, e limitou-se o número de árvores à 10; os outros parâmetros são mantidos os padrões especificados pela biblioteca.
 
 \section{Experimentos}
 \label{sec:experiments}
 
-Como há estocasticidade no método a partir da etapa de pré-processamento, rodamos nossos experimentos 10 vezes com sementes aleatórias diferentes.
-Isso possibilita a obtenção de intervalos de confiança para nossos resultados.
+Como há estocasticidade no método a partir da etapa de pré-processamento, rodou-se o experimento 10 vezes com sementes aleatórias diferentes para cálculo de intervalos de confiança. 
 
 Para cada execução individual do experimento, a base pré-processada foi dividida em um conjunto de treino, compreendendo 60\% do total de dados, e um conjunto de teste, com o restante.
 A divisão é feita de maneira estratificada, considerando apenas se há ou não colaboração entre os donos dos currículos.
 
-O restante do experimento consiste em treinar um modelo de Floresta Aleatória no conjunto de treino e validá-lo no conjunto de teste em duas modalidades distintas, que denominamos \texttt{binary} e \texttt{standard}.
+O restante do experimento consiste em treinar um modelo de Floresta Aleatória no conjunto de treino e validá-lo no conjunto de teste em duas modalidades distintas, que denominou-se \texttt{binary} e \texttt{standard}.
 A figura~\ref{fig:modalities} ilustra ambas modalidades.
 
 \begin{figure}
@@ -155,13 +149,14 @@ A figura~\ref{fig:modalities} ilustra ambas modalidades.
     \hspace{10pt}
     \includegraphics[width=0.45\textwidth]{images/standard.png}
   \end{center}
-  \caption{Modalidades de mineração de dados: à esquerda, a modalidade \texttt{binary}, em que é necessário apenas determinar se há ou não colaboração entre os donos dos currículos. À direita, a modalidade \texttt{standard}, onde o par de currículos é classificado de acordo com o número de colaborações previsto}
+  \vspace{-15pt}
+  \caption{Modalidades de mineração de dados: à esquerda, a modalidade \texttt{binary}, em que é necessário apenas determinar se há ou não colaboração entre os donos dos currículos. À direita, a modalidade \texttt{standard}, onde o par de currículos é classificado de acordo com o número de colaborações previsto.}
   \label{fig:modalities}
 \end{figure}
 
 Na modalidade \texttt{binary}, a tarefa consiste em determinar, dado um par de currículos de doutores, se há pelo menos uma colaboração entre eles.
 Aqui, a Floresta Aleatória é treinada com pares de currículos como atributos e a informação de se há ou não colaboração entre eles como saída esperada.
-Para fazer com que o modelo treinado seja invariante à ordem em que os currículos são colocados no par, duplicamos o conjunto de treino, colocando currículos nos dois sentidos.
+Para fazer com que o modelo treinado seja invariante à ordem em que os currículos são colocados no par, duplicou-se o conjunto de treino, colocando currículos nos dois sentidos.
 
 Já na modalidade \texttt{standard}, a tarefa consiste em estimar, dado um par de currículos de doutores, o número de colaborações que existem entre eles.
 Neste caso, o modelo é treinado com os pares de currículos e sua saída é uma classe de $\{0, 1, ..., M\}$, onde $M$ é o maior número de colaborações presente no conjunto de testes.
