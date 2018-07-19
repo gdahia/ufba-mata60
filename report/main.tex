@@ -16,7 +16,6 @@
 
 \author{Gabriel Dahia, Gabriel L. P. e Souza, Pedro Vidal}
 
-
 \address{Departamento de Ciência da Computação -- Universidade Federal da Bahia
   (UFBA)
   \email{\{gdahia,gabriellecomt,pvidal\}@dcc.ufba.br}
@@ -180,30 +179,21 @@ Isso permite avaliar a robustez do método proposto à ordem em que os currícul
 
 \subsection{Resultados}
 \label{sec:results}
-Realizando dez repetições do nosso experimento, obtivemos $86,70\%~\pm~0,18$ de acurácia, com 99\% de confiança, para a modalidade \texttt{binary}, e $78,34\%~\pm~0,16$, com 99\% de confiança, para a modalidade \texttt{standard}.
+A partir das dez repetições do experimento, obteve-se $86,70\%~\pm~0,18$ de acurácia, com 99\% de confiança, para a modalidade \texttt{binary}, e $78,34\%~\pm~0,16$, com 99\% de confiança, para a modalidade \texttt{standard}.
 
-Quando se compara estes resultados com a performance de um classificador aleatório para essa mesma tarefa - dado que esta tarefa não foi tentada anteriormente e, portanto, não há estado-da-arte -, respectivamente 50\% para a modalidade \texttt{binary}, e X\% para a modalidade \texttt{standard}.
+Quando se compara estes resultados com a performance esperada de um classificador aleatório para essa mesma tarefa - dado que esta tarefa não foi tentada anteriormente e, portanto, não há estado-da-arte -, respectivamente 50\% para a modalidade \texttt{binary}, e 1,08\% (em média, existem 92 valores de colaborações possíveis) para a modalidade \texttt{standard}.
+
 É importante notar que o resultado apresentado, na verdade, se trata de um limite inferior para a performance do modelo no conjunto de teste.
 Isso ocorre porque, se para um determinado par de currículos para o qual foi previsto colaborações, não há colaboração relatada entre seus detentores, há três cenários possíveis: (1) realmente não há e nem nunca haverá colaboração entre esses pesquisadores e o modelo realmente fez uma classificação equivocada; (2) os doutores ainda não colaboraram, mas no futuro podem vir a colaborar; ou (3) há um erro no banco de dados e os doutores colaboraram, mas não relataram sua colaboração.
-
-Nos cenários (2) e (3), 
-
-% TODO: explain that we do not have temporal information. the model is time agnostic
-
-% TODO: say that similar reasoning also applies to standard
+Nos cenários (2) e (3), a acurácia calculada do modelo é inferior ao valor correto.
+Em especial, para o cenário (2), o \emph{LattesDoctoralDataset} não possui informação temporal e o modelo, portanto, não pode aprender esse tipo de informação.
 
 Também é importante notar que a discrepância nos resultados entre as modalidades pode ser explicada pelo fato de a tarefa proposta para \texttt{standard} ser consideravelmente mais difícil do que a de \texttt{binary}: em um caso extremo, é possível que um dado número de colaborações não apareça no treino e todas as instãncias dessa classe seriam mal-classificadas.
 Além do mais, a avaliação proposta não considera a proximidade do número de colaborações previsto do real; apenas previsões corretas são consideradas na métrica.
 
 Apesar do grande número de nós em cada árvore (nos experimentos realizados, este número ficou na ordem de 10 mil), é possível realizar inferência no modelo, uma vez carregado em memória principal, em tempo real.
-Isso ocorre porque a altura é, no máximo, o número de atributos fornecidos ao modelo, que não passa de 100.
+Isso ocorre porque a altura é, no máximo, o número de atributos fornecidos ao modelo, que não passa de 100. % em media, sao 96 atributos
 Além disso, os arquivos dos modelos têm tamanho razoável: aqueles para a modalidade \texttt{binary} têm em torno de 15MB, e os \texttt{standard} têm em torno de 250MB.
-
-% TODO: discuss results
-
-% TODO: get exact number of classes in dataset, to state random performance for standard task
-
-% TODO: get exact number of attributes fed to the models
 
 % TODO: maybe daniela will complain about not comparing to similar works for other datasets, we can argue that in the specs, review is not listed. the limit of pages can also be listed as an argument. we can also use this excuse to say adjsutments to the text are required, prior to publication and stall it
 
