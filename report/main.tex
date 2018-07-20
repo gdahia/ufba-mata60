@@ -4,7 +4,7 @@
 \usepackage{graphicx,url}
 \usepackage{amssymb}
 \usepackage{amsmath}
- \usepackage[sort&compress]{natbib}
+\usepackage{natbib}
 
 \usepackage[brazil]{babel}   
 
@@ -19,7 +19,7 @@
   (UFBA)
   \email{\{gdahia,gabriellecomt,pvidal\}@dcc.ufba.br}
 }
-
+\renewcommand*{\bibfont}{\small}
 \begin{document} 
 
 \maketitle
@@ -95,7 +95,7 @@ O segundo, chamado de \texttt{formacao}, contém ``\texttt{doutorado}'', ``\text
 
 Para mitigar os efeitos dessa variabilidade, utilizou-se Análise Semântica Latente (LSA)~\cite{lsa}.
 Para isso, considerou-se cada entrada dos campos de ou \texttt{lugares}, ou \texttt{formacao}, a depender de qual conjunto está sendo agrupado, como um documento individual.
-O resultado desse processo é a transformação dos valores desses campos em um vetores no espaço $\mathbb{R}^{100}$.
+O resultado desse processo é a transformação dos valores desses campos em vetores no espaço $\mathbb{R}^{100}$.
 Em seguida, foi aplicado o algoritmo \emph{k-Means} para agrupar o conjunto de valores dos campos em 500 grupos, no caso de \texttt{formacao}, ou 3.000 grupos, no caso de \texttt{lugares}.
 Este número foi calculado para comportar todas instituições de ensino superior no Brasil - 2.364, de acordo com~\cite{censo-mec} - e outras.
 
@@ -202,8 +202,8 @@ A abordagem de mineração de textos empregada, inclusive, não generaliza caso 
 Melhores resultados também devem poder ser obtidos integrando o processo de colheita de uma nova versão da base de dados com as demandas do modelo de aprendizado de máquina.
 Como mencionado anteriormente, maior padronização das informações e a informação temporal das colaborações pode melhorar a performance da metodologia.
 
- \setlength{\bibsep}{0ex}
-\vspace{-5pt}
+\setlength{\bibsep}{0ex}
+\vspace{-10pt}
 \bibliographystyle{sbc}
 \bibliography{refs}
 
